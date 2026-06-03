@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>플라잉재팬 휴가대장 - 휴가 신청</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#1a56db;--blue-l:#e8f0fe;--warn:#d97706;--ok:#059669;--danger:#dc2626;--border:rgba(0,0,0,0.08);--gray:#6b7280}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f4f8;color:#111827;font-size:14px;line-height:1.6}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar-l{display:flex;align-items:center;gap:10px}
+.logo-mark{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800}
+.topbar-r{display:flex;align-items:center;gap:10px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--blue-l);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;overflow:hidden;flex-shrink:0}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px}
+.ph{margin-bottom:20px}
+.pt{font-size:20px;font-weight:700}
+.ps{font-size:13px;color:var(--gray);margin-top:3px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:14px 16px}
+.sl{font-size:11px;color:var(--gray);font-weight:500;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.sv{font-size:26px;font-weight:700}
+.ss{font-size:11px;color:var(--gray);margin-top:3px}
+.prog{background:#f3f4f6;border-radius:4px;height:5px;overflow:hidden;margin-top:8px}
+.prog-bar{height:100%;background:var(--blue);border-radius:4px}
+.card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:16px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.ct{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.ct i{font-size:17px;color:var(--blue)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:#374151;font-family:inherit;transition:.1s;white-space:nowrap}
+.btn:hover{background:#f3f4f6}
+.btn-p{background:var(--blue);color:#fff;border-color:var(--blue)}.btn-p:hover{background:#1648c0}
+.btn-sm{padding:5px 10px;font-size:12px}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-admin{background:#fef3c7;color:#92400e}.badge-a2{background:#fee2e2;color:#991b1b}
+.badge-a1{background:#dbeafe;color:#1e40af}.badge-user{background:#f3f4f6;color:#374151}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.sdot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.s-pending{background:#fef3c7;color:#92400e}.s-a1{background:#dbeafe;color:#1e40af}
+.s-ok{background:#d1fae5;color:#065f46}.s-reject{background:#fee2e2;color:#991b1b}
+.type-tag{display:inline-block;padding:2px 7px;background:#f3f4f6;border-radius:4px;font-size:11px;font-weight:500}
+.step-dot{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:#f3f4f6;color:var(--gray);white-space:nowrap}
+.step-dot.done{background:var(--blue-l);color:var(--blue)}.step-dot.rej{background:#fee2e2;color:var(--danger)}
+.step-line{display:inline-block;width:12px;height:2px;background:#e5e7eb;margin:0 2px;vertical-align:middle}
+.step-line.done{background:var(--blue)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 10px;font-size:11px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#f9fafb}
+.ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal{background:#fff;border-radius:14px;padding:22px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;animation:mi .15s ease}
+@keyframes mi{from{transform:translateY(10px) scale(.98);opacity:0}}
+.modal-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:18px;color:#111}
+.modal-title i{font-size:20px;color:var(--blue)}
+.mf{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.steps-row{display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+.st{text-align:center;flex:1}
+.sc{width:26px;height:26px;border-radius:50%;border:2px solid #e5e7eb;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:11px;font-weight:700;color:#9ca3af}
+.st.active .sc{border-color:var(--blue);color:var(--blue)}
+.sl2{font-size:10px;color:var(--gray)}
+.st-line{height:2px;background:#e5e7eb;flex:1;margin-top:-14px}
+.fg{margin-bottom:12px}
+.fl{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px}
+.fi{width:100%;padding:9px 11px;border:1px solid #d1d5db;border-radius:7px;font-size:13px;background:#fff;font-family:inherit;color:#111}
+.fi:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+textarea.fi{resize:vertical;min-height:70px}select.fi{cursor:pointer}
+.info-box{background:var(--blue-l);border-radius:7px;padding:9px 12px;font-size:12px;color:#1e40af;margin-bottom:14px}
+.toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);animation:ti .2s ease}
+@keyframes ti{from{transform:translateY(14px);opacity:0}}
+.toast.ok{background:var(--ok)}.toast.err{background:var(--danger)}
+.empty{text-align:center;padding:36px;color:var(--gray)}
+.empty i{font-size:34px;opacity:.35;display:block;margin-bottom:10px}
+.spinner{width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:24px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-l">
+    <div class="logo-mark">FJ</div>
+    <span style="font-size:14px;font-weight:700;color:#111">플라잉재팬 휴가대장</span>
+  </div>
+  <div class="topbar-r">
+    <div class="avatar" id="avatarEl"></div>
+    <div style="min-width:0">
+      <div style="font-size:12px;font-weight:600;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px" id="nameEl"></div>
+      <div style="font-size:10px;color:#6b7280" id="roleEl"></div>
+    </div>
+    <button class="btn btn-sm" id="btnOut"><i class="ti ti-logout"></i>로그아웃</button>
+  </div>
+</div>
+
+<div class="wrap" id="wrap">
+  <div class="spinner"></div>
+</div>
+
+<script type="module">
+import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged, signOut }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, query, orderBy, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const FIREBASE_CONFIG = {
+  apiKey:"AIzaSyAvwdN5mhg2sL4D7zaG-AGEwsK1YfgmfVI",
+  authDomain:"flyingjapan-leave.firebaseapp.com",
+  projectId:"flyingjapan-leave",
+  storageBucket:"flyingjapan-leave.firebasestorage.app",
+  messagingSenderId:"973822019022",
+  appId:"1:973822019022:web:fd5473aadf14061539979f"
+};
+
+const app  = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+const ROLES    = {admin:'최고관리자',approver2:'2차승인자',approver1:'1차승인자',user:'일반직원'};
+const ROLE_CLS = {admin:'badge-admin',approver2:'badge-a2',approver1:'badge-a1',user:'badge-user'};
+const SLB      = {pending:'기안완료',approved1:'1차승인',approved:'최종승인',rejected:'반려'};
+const SCLS     = {pending:'s-pending',approved1:'s-a1',approved:'s-ok',rejected:'s-reject'};
+const LTYPES   = ['연차','반차(오전)','반차(오후)','병가','특별휴가','경조사'];
+
+let me       = null;
+let myLeaves = [];
+let allUsers = [];
+
+const rem   = u => (u.totalLeave||0)-(u.usedLeave||0);
+const fmt   = d => d?d.replace(/-/g,'.'):'-';
+const dn    = u => u.name||u.email?.split('@')[0]||'';
+const today = () => new Date().toISOString().slice(0,10);
+
+function toast(msg,t=''){
+  document.querySelectorAll('.toast').forEach(e=>e.remove());
+  const el=document.createElement('div');el.className='toast '+t;
+  el.innerHTML=`<i class="ti ${t==='ok'?'ti-check':t==='err'?'ti-x':'ti-info-circle'}"></i>${msg}`;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),3000);
+}
+
+onAuthStateChanged(auth, async fbUser => {
+  if(!fbUser){ location.href='index.html'; return; }
+  const snap = await getDoc(doc(db,'users',fbUser.uid));
+  if(!snap.exists()){ location.href='index.html'; return; }
+  me = {uid:fbUser.uid, photoURL:fbUser.photoURL||null, ...snap.data()};
+
+  // 상단 유저 정보
+  const av = document.getElementById('avatarEl');
+  av.innerHTML = me.photoURL ? `<img src="${me.photoURL}">` : dn(me).slice(0,2).toUpperCase();
+  document.getElementById('nameEl').textContent = dn(me);
+  document.getElementById('roleEl').textContent = `${ROLES[me.role]||'일반직원'} ${me.dept?'· '+me.dept:''}`;
+
+  await fetchData();
+});
+
+async function fetchData(){
+  const [lSnap, uSnap] = await Promise.all([
+    getDocs(query(collection(db,'leaves'), orderBy('createdAt','desc'))),
+    getDocs(collection(db,'users'))
+  ]);
+  myLeaves = lSnap.docs.map(d=>({id:d.id,...d.data()})).filter(l=>l.userId===me.uid);
+  allUsers = uSnap.docs.map(d=>({uid:d.id,...d.data()}));
+  renderPage();
+}
+
+function renderPage(){
+  const r   = rem(me);
+  const pct = Math.min(100,Math.round(((me.usedLeave||0)/(me.totalLeave||15))*100));
+  document.getElementById('wrap').innerHTML = `
+  <div class="ph">
+    <div class="pt">안녕하세요, ${dn(me)}님 👋</div>
+    <div class="ps">${new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'})}</div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="sl"><i class="ti ti-beach"></i>잔여 휴가</div>
+      <div class="sv" style="color:var(--blue)">${r}일</div>
+      <div class="ss">총 ${me.totalLeave}일 중 ${me.usedLeave}일 사용</div>
+      <div class="prog"><div class="prog-bar" style="width:${pct}%"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="sl"><i class="ti ti-file-text"></i>신청 건수</div>
+      <div class="sv">${myLeaves.length}건</div>
+      <div class="ss">최종승인 ${myLeaves.filter(l=>l.status==='approved').length}건</div>
+    </div>
+    <div class="stat-card">
+      <div class="sl"><i class="ti ti-clock"></i>진행중</div>
+      <div class="sv" style="color:var(--warn)">${myLeaves.filter(l=>l.status==='pending'||l.status==='approved1').length}건</div>
+      <div class="ss">승인 대기중인 신청</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch">
+      <div class="ct"><i class="ti ti-calendar-event"></i>내 휴가 신청 내역</div>
+      <button class="btn btn-p btn-sm" id="btnNew"><i class="ti ti-plus"></i>휴가 신청</button>
+    </div>
+    ${leaveTable(myLeaves)}
+  </div>`;
+  bindPage();
+}
+
+function leaveTable(leaves){
+  if(!leaves.length) return `<div class="empty"><i class="ti ti-calendar-off"></i><p>신청 내역이 없습니다</p></div>`;
+  return `<div class="tbl-wrap"><table>
+    <thead><tr><th>구분</th><th>기간</th><th>일수</th><th>사유</th><th>진행</th><th>상태</th></tr></thead>
+    <tbody>
+      ${leaves.map(l=>`<tr>
+        <td><span class="type-tag">${l.type}</span></td>
+        <td style="font-size:12px;color:var(--gray);white-space:nowrap">${fmt(l.startDate)}${l.endDate!==l.startDate?' ~ '+fmt(l.endDate):''}</td>
+        <td style="font-weight:600;color:var(--blue)">${l.days}일</td>
+        <td><div class="ellipsis" title="${l.reason}">${l.reason}</div>
+          ${l.rejectedReason?`<div style="font-size:11px;color:var(--danger)">반려: ${l.rejectedReason}</div>`:''}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:2px">
+            <span class="step-dot done">기안</span>
+            <span class="step-line ${(l.status==='approved1'||l.status==='approved')&&l.status!=='rejected'?'done':''}"></span>
+            <span class="step-dot ${l.status==='rejected'?'rej':l.status==='approved1'||l.status==='approved'?'done':''}">1차</span>
+            <span class="step-line ${l.status==='approved'?'done':''}"></span>
+            <span class="step-dot ${l.status==='approved'?'done':''}">최종</span>
+          </div>
+        </td>
+        <td><span class="status-badge ${SCLS[l.status]||''}"><span class="sdot"></span>${SLB[l.status]||l.status}</span></td>
+      </tr>`).join('')}
+    </tbody>
+  </table></div>`;
+}
+
+function bindPage(){
+  document.getElementById('btnNew')?.addEventListener('click', openNewModal);
+}
+
+function openNewModal(){
+  const a1s = allUsers.filter(u=>u.role==='approver1'||u.role==='admin');
+  const a2s = allUsers.filter(u=>u.role==='approver2'||u.role==='admin');
+  if(!a1s.length||!a2s.length){
+    toast('승인자가 지정되지 않았습니다. 관리자에게 문의하세요.','err'); return;
+  }
+  showModal(`
+    <div class="modal-title"><i class="ti ti-calendar-plus"></i>휴가 신청</div>
+    <div class="steps-row">
+      <div class="st active"><div class="sc">1</div><div class="sl2">기안</div></div>
+      <div class="st-line"></div>
+      <div class="st"><div class="sc">2</div><div class="sl2">1차승인</div></div>
+      <div class="st-line"></div>
+      <div class="st"><div class="sc">3</div><div class="sl2">최종승인</div></div>
+    </div>
+    <div class="info-box">잔여 휴가: <b>${rem(me)}일</b></div>
+    <div class="fg"><label class="fl">휴가 종류</label>
+      <select class="fi" id="mT">${LTYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="fl">시작일</label><input type="date" class="fi" id="mS" value="${today()}"></div>
+      <div class="fg"><label class="fl">종료일</label><input type="date" class="fi" id="mE" value="${today()}"></div>
+    </div>
+    <div class="fg"><label class="fl">사유</label>
+      <textarea class="fi" id="mR" rows="3" placeholder="휴가 사유를 입력해주세요"></textarea></div>
+    <div class="fg"><label class="fl">1차 승인자</label>
+      <select class="fi" id="mA1">${a1s.map(u=>`<option value="${u.uid}">${dn(u)} (${u.dept||ROLES[u.role]})</option>`).join('')}</select></div>
+    <div class="fg"><label class="fl">2차 승인자</label>
+      <select class="fi" id="mA2">${a2s.map(u=>`<option value="${u.uid}">${dn(u)} (${u.dept||ROLES[u.role]})</option>`).join('')}</select></div>
+    <div class="mf">
+      <button class="btn" id="mCn">취소</button>
+      <button class="btn btn-p" id="mSb"><i class="ti ti-send"></i>기안 제출</button>
+    </div>
+  `);
+  document.getElementById('mCn').onclick = closeModal;
+  document.getElementById('mSb').onclick = async () => {
+    const type=document.getElementById('mT').value;
+    const s=document.getElementById('mS').value;
+    const e=document.getElementById('mE').value;
+    const reason=document.getElementById('mR').value.trim();
+    const a1id=document.getElementById('mA1').value;
+    const a2id=document.getElementById('mA2').value;
+    if(!reason){toast('사유를 입력해주세요','err');return;}
+    const days=type.includes('반차')?0.5:Math.max(1,Math.round((new Date(e)-new Date(s))/864e5)+1);
+    if(days>rem(me)){toast(`잔여 휴가 부족 (잔여 ${rem(me)}일)`,'err');return;}
+    const a1u=allUsers.find(u=>u.uid===a1id);
+    const a2u=allUsers.find(u=>u.uid===a2id);
+    await addDoc(collection(db,'leaves'),{
+      userId:me.uid, userName:dn(me), userEmail:me.email, dept:me.dept||'',
+      type, startDate:s, endDate:e, days, reason,
+      status:'pending',
+      approver1Id:a1id, approver1Name:dn(a1u)||'',
+      approver2Id:a2id, approver2Name:dn(a2u)||'',
+      rejectedReason:'',
+      createdAt:serverTimestamp(), updatedAt:serverTimestamp()
+    });
+    toast('기안 제출 완료!','ok');
+    closeModal(); await fetchData();
+  };
+}
+
+function showModal(html){
+  closeModal();
+  const w=document.createElement('div');w.id='mW';
+  w.innerHTML=`<div class="modal-back" id="mB"><div class="modal">${html}</div></div>`;
+  document.body.appendChild(w);
+  document.getElementById('mB').onclick=e=>{if(e.target===e.currentTarget)closeModal();};
+}
+function closeModal(){document.getElementById('mW')?.remove();}
+
+document.getElementById('btnOut').addEventListener('click',()=>{
+  signOut(auth).then(()=>location.href='index.html');
+});
+</script>
+</body>
+</html>

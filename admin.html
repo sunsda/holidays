@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>플라잉재팬 휴가대장 - 관리자</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#1a56db;--blue-l:#e8f0fe;--warn:#d97706;--ok:#059669;--danger:#dc2626;--border:rgba(0,0,0,0.08);--gray:#6b7280}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f4f8;color:#111827;font-size:14px;line-height:1.6}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo-mark{width:32px;height:32px;background:#111;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--blue-l);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;overflow:hidden;flex-shrink:0}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px}
+.ph{margin-bottom:20px}.pt{font-size:20px;font-weight:700}.ps{font-size:13px;color:var(--gray);margin-top:3px}
+.tabs{display:flex;gap:4px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:7px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--gray);font-family:inherit;transition:.1s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tab.active{background:#111;color:#fff}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:14px 16px}
+.sl{font-size:11px;color:var(--gray);font-weight:500;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.sv{font-size:24px;font-weight:700}.ss{font-size:11px;color:var(--gray);margin-top:3px}
+.card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:16px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.ct{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.ct i{font-size:17px;color:var(--blue)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:#374151;font-family:inherit;transition:.1s;white-space:nowrap}
+.btn:hover{background:#f3f4f6}
+.btn-p{background:var(--blue);color:#fff;border-color:var(--blue)}.btn-p:hover{background:#1648c0}
+.btn-ok{background:var(--ok);color:#fff;border-color:var(--ok)}.btn-ok:hover{background:#047857}
+.btn-ng{background:var(--danger);color:#fff;border-color:var(--danger)}.btn-ng:hover{background:#b91c1c}
+.btn-sm{padding:5px 10px;font-size:12px}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-admin{background:#fef3c7;color:#92400e}.badge-a2{background:#fee2e2;color:#991b1b}
+.badge-a1{background:#dbeafe;color:#1e40af}.badge-user{background:#f3f4f6;color:#374151}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.sdot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.s-pending{background:#fef3c7;color:#92400e}.s-a1{background:#dbeafe;color:#1e40af}
+.s-ok{background:#d1fae5;color:#065f46}.s-reject{background:#fee2e2;color:#991b1b}
+.type-tag{display:inline-block;padding:2px 7px;background:#f3f4f6;border-radius:4px;font-size:11px;font-weight:500}
+.step-dot{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:#f3f4f6;color:var(--gray)}
+.step-dot.done{background:var(--blue-l);color:var(--blue)}.step-dot.rej{background:#fee2e2;color:var(--danger)}
+.step-line{display:inline-block;width:12px;height:2px;background:#e5e7eb;margin:0 2px;vertical-align:middle}
+.step-line.done{background:var(--blue)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 10px;font-size:11px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#f9fafb}
+.ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
+.form-sel{padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;background:#fff;font-family:inherit;cursor:pointer;color:#111}
+.dept-input{border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;width:100px;font-family:inherit;background:#fff;color:inherit}
+.leave-input{border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;width:55px;font-family:inherit;background:#fff;color:inherit;text-align:center}
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal{background:#fff;border-radius:14px;padding:22px;width:100%;max-width:420px;animation:mi .15s ease}
+@keyframes mi{from{transform:translateY(10px) scale(.98);opacity:0}}
+.modal-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:16px;color:#111}
+.modal-title i{font-size:20px;color:var(--danger)}
+.mf{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.fg{margin-bottom:12px}.fl{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px}
+.fi{width:100%;padding:9px 11px;border:1px solid #d1d5db;border-radius:7px;font-size:13px;background:#fff;font-family:inherit;color:#111}
+.fi:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+textarea.fi{resize:vertical;min-height:70px}
+.toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);animation:ti .2s ease}
+@keyframes ti{from{transform:translateY(14px);opacity:0}}
+.toast.ok{background:var(--ok)}.toast.err{background:var(--danger)}
+.empty{text-align:center;padding:36px;color:var(--gray)}.empty i{font-size:34px;opacity:.35;display:block;margin-bottom:10px}
+.spinner{width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:24px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="logo-mark">FJ</div>
+    <span style="font-size:14px;font-weight:700;color:#111">플라잉재팬 휴가대장</span>
+    <span style="font-size:11px;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:20px;font-weight:600">⚙ 관리자</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="avatar" id="avatarEl"></div>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:#111" id="nameEl"></div>
+      <div style="font-size:10px;color:var(--gray)">최고관리자</div>
+    </div>
+    <button class="btn btn-sm" id="btnOut"><i class="ti ti-logout"></i>로그아웃</button>
+  </div>
+</div>
+
+<div class="wrap" id="wrap"><div class="spinner"></div></div>
+
+<script type="module">
+import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged, signOut }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, getDoc, getDocs, updateDoc, query, orderBy, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const FIREBASE_CONFIG = {
+  apiKey:"AIzaSyAvwdN5mhg2sL4D7zaG-AGEwsK1YfgmfVI",
+  authDomain:"flyingjapan-leave.firebaseapp.com",
+  projectId:"flyingjapan-leave",
+  storageBucket:"flyingjapan-leave.firebasestorage.app",
+  messagingSenderId:"973822019022",
+  appId:"1:973822019022:web:fd5473aadf14061539979f"
+};
+
+// ── 관리자 이메일 (여기에 추가) ───────────────────────────
+const ADMIN_EMAILS = [
+  "seonyang@flyingjp.com",  // ← 실제 관리자 이메일로 변경
+];
+
+const app  = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+const ROLES    = {admin:'최고관리자',approver2:'2차승인자(임원)',approver1:'1차승인자',user:'일반직원'};
+const ROLE_CLS = {admin:'badge-admin',approver2:'badge-a2',approver1:'badge-a1',user:'badge-user'};
+const SLB      = {pending:'기안완료',approved1:'1차승인',approved:'최종승인',rejected:'반려'};
+const SCLS     = {pending:'s-pending',approved1:'s-a1',approved:'s-ok',rejected:'s-reject'};
+
+let me        = null;
+let allUsers  = [];
+let allLeaves = [];
+let curTab    = 'roles';
+
+const rem  = u => (u.totalLeave||0)-(u.usedLeave||0);
+const fmt  = d => d?d.replace(/-/g,'.'):'-';
+const dn   = u => u.name||u.email?.split('@')[0]||'';
+const ini  = u => dn(u).slice(0,2).toUpperCase();
+const canA1 = r => r==='approver1'||r==='admin';
+const canA2 = r => r==='approver2'||r==='admin';
+
+function toast(msg,t=''){
+  document.querySelectorAll('.toast').forEach(e=>e.remove());
+  const el=document.createElement('div');el.className='toast '+t;
+  el.innerHTML=`<i class="ti ${t==='ok'?'ti-check':t==='err'?'ti-x':'ti-info-circle'}"></i>${msg}`;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),3000);
+}
+
+onAuthStateChanged(auth, async fbUser => {
+  if(!fbUser){location.href='index.html';return;}
+  if(!ADMIN_EMAILS.includes(fbUser.email)){
+    location.href='main.html';return;
+  }
+  // admin role 자동 부여
+  const ref  = doc(db,'users',fbUser.uid);
+  const snap = await getDoc(ref);
+  if(snap.exists()&&snap.data().role!=='admin'){
+    await updateDoc(ref,{role:'admin'});
+  }
+  me = {uid:fbUser.uid,photoURL:fbUser.photoURL||null,...(snap.exists()?snap.data():{})};
+  const av=document.getElementById('avatarEl');
+  av.innerHTML=me.photoURL?`<img src="${me.photoURL}">`:fbUser.displayName?.slice(0,2)||fbUser.email.slice(0,2).toUpperCase();
+  document.getElementById('nameEl').textContent=fbUser.displayName||fbUser.email.split('@')[0];
+  await fetchData();
+});
+
+async function fetchData(){
+  const [uSnap,lSnap]=await Promise.all([
+    getDocs(collection(db,'users')),
+    getDocs(query(collection(db,'leaves'),orderBy('createdAt','desc')))
+  ]);
+  allUsers  = uSnap.docs.map(d=>({uid:d.id,...d.data()}));
+  allLeaves = lSnap.docs.map(d=>({id:d.id,...d.data()}));
+  renderPage();
+}
+
+function renderPage(){
+  const pendCnt = allLeaves.filter(l=>l.status==='pending'||l.status==='approved1').length;
+  document.getElementById('wrap').innerHTML = `
+  <div class="ph">
+    <div class="pt">관리자 대시보드</div>
+    <div class="ps">직원 역할 관리, 휴가 부여, 전체 현황 조회</div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="sl"><i class="ti ti-users"></i>전체 직원</div><div class="sv">${allUsers.length}명</div></div>
+    <div class="stat-card"><div class="sl"><i class="ti ti-user-check"></i>승인자</div><div class="sv">${allUsers.filter(u=>u.role==='approver1'||u.role==='approver2').length}명</div></div>
+    <div class="stat-card"><div class="sl"><i class="ti ti-clock"></i>승인 대기</div><div class="sv" style="color:${pendCnt>0?'var(--warn)':'var(--ok)'}">${pendCnt}건</div></div>
+    <div class="stat-card"><div class="sl"><i class="ti ti-calendar"></i>전체 신청</div><div class="sv">${allLeaves.length}건</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab ${curTab==='roles'?'active':''}" data-tab="roles"><i class="ti ti-shield-half"></i>역할 관리</button>
+    <button class="tab ${curTab==='grant'?'active':''}" data-tab="grant"><i class="ti ti-gift"></i>휴가 부여</button>
+    <button class="tab ${curTab==='leaves'?'active':''}" data-tab="leaves"><i class="ti ti-list"></i>전체 내역</button>
+    <button class="tab ${curTab==='approve'?'active':''}" data-tab="approve"><i class="ti ti-clipboard-check"></i>승인 처리${pendCnt>0?` <span style="background:var(--danger);color:#fff;font-size:10px;padding:1px 6px;border-radius:20px">${pendCnt}</span>`:''}</button>
+  </div>
+
+  ${curTab==='roles'  ? tabRoles()   : ''}
+  ${curTab==='grant'  ? tabGrant()   : ''}
+  ${curTab==='leaves' ? tabLeaves()  : ''}
+  ${curTab==='approve'? tabApprove() : ''}
+  `;
+  bindPage();
+}
+
+// ── 탭: 역할 관리 ─────────────────────────────────────
+function tabRoles(){
+  return `<div class="card">
+    <div class="ch"><div class="ct"><i class="ti ti-shield-half"></i>역할 및 부서 관리</div>
+      <span style="font-size:12px;color:var(--gray)">저장 버튼 클릭 시 즉시 반영</span></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>직원</th><th>이메일</th><th>부서</th><th>현재 역할</th><th>변경</th><th>저장</th></tr></thead>
+      <tbody>
+        ${allUsers.map(u=>`<tr>
+          <td><div style="display:flex;align-items:center;gap:8px">
+            <div class="avatar" style="width:26px;height:26px;font-size:10px">${u.photoURL?`<img src="${u.photoURL}">`:`${ini(u)}`}</div>
+            <span style="font-weight:500">${dn(u)}</span>
+          </div></td>
+          <td style="font-size:11px;color:var(--gray)">${u.email}</td>
+          <td><input class="dept-input" id="dept_${u.uid}" value="${u.dept||''}" placeholder="부서명"></td>
+          <td><span class="badge ${ROLE_CLS[u.role]||'badge-user'}">${ROLES[u.role]||'일반직원'}</span></td>
+          <td><select class="form-sel" id="role_${u.uid}">
+            <option value="user"      ${(!u.role||u.role==='user')    ?'selected':''}>일반직원</option>
+            <option value="approver1" ${u.role==='approver1'?'selected':''}>1차승인자</option>
+            <option value="approver2" ${u.role==='approver2'?'selected':''}>2차승인자(임원)</option>
+            <option value="admin"     ${u.role==='admin'    ?'selected':''}>최고관리자</option>
+          </select></td>
+          <td><button class="btn btn-p btn-sm save-role" data-uid="${u.uid}" data-name="${dn(u)}"><i class="ti ti-check"></i>저장</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>
+  </div>`;
+}
+
+// ── 탭: 휴가 부여 ─────────────────────────────────────
+function tabGrant(){
+  return `
+  <div class="card">
+    <div class="ch"><div class="ct"><i class="ti ti-gift"></i>개인별 휴가 부여</div></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>직원</th><th>부서</th><th>부여</th><th>사용</th><th>잔여</th><th>추가 부여</th></tr></thead>
+      <tbody>
+        ${allUsers.map(u=>`<tr>
+          <td><div style="display:flex;align-items:center;gap:8px">
+            <div class="avatar" style="width:26px;height:26px;font-size:10px">${u.photoURL?`<img src="${u.photoURL}">`:`${ini(u)}`}</div>
+            <div><div style="font-weight:500">${dn(u)}</div><div style="font-size:11px;color:var(--gray)">${u.email}</div></div>
+          </div></td>
+          <td style="font-size:12px">${u.dept||'-'}</td>
+          <td style="font-weight:600;color:var(--blue)">${u.totalLeave||0}일</td>
+          <td style="color:var(--warn)">${u.usedLeave||0}일</td>
+          <td style="color:var(--ok);font-weight:600">${rem(u)}일</td>
+          <td><div style="display:flex;align-items:center;gap:6px">
+            <input type="number" class="leave-input" id="gd_${u.uid}" min="1" max="60" value="5">
+            <button class="btn btn-p btn-sm do-grant" data-uid="${u.uid}" data-name="${dn(u)}"><i class="ti ti-plus"></i>부여</button>
+          </div></td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card" style="background:#f0fdf4;border-color:#86efac">
+    <div class="ch"><div class="ct" style="color:#166534"><i class="ti ti-users" style="color:var(--ok)"></i>전체 일괄 부여</div></div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-size:13px;color:#166534">전체 직원 ${allUsers.length}명에게</span>
+      <input type="number" class="fi" id="bulkDays" min="1" max="30" value="1" style="width:70px;padding:7px 10px">
+      <span style="font-size:13px;color:#166534">일 일괄 추가</span>
+      <button class="btn btn-ok btn-sm" id="doBulk"><i class="ti ti-gift"></i>일괄 부여</button>
+    </div>
+  </div>`;
+}
+
+// ── 탭: 전체 내역 ─────────────────────────────────────
+function tabLeaves(){
+  return `<div class="card">
+    <div class="ch"><div class="ct"><i class="ti ti-list"></i>전체 휴가 신청 내역</div>
+      <span style="font-size:12px;color:var(--gray)">총 ${allLeaves.length}건</span></div>
+    ${leaveTable(allLeaves,false)}
+  </div>`;
+}
+
+// ── 탭: 승인 처리 ─────────────────────────────────────
+function tabApprove(){
+  const s1 = allLeaves.filter(l=>l.status==='pending');
+  const s2 = allLeaves.filter(l=>l.status==='approved1');
+  if(!s1.length&&!s2.length) return `<div class="card"><div class="empty"><i class="ti ti-check"></i><p>처리할 항목이 없습니다</p></div></div>`;
+  return `
+  ${s1.length?`<div class="card" style="margin-bottom:14px">
+    <div class="ch"><div class="ct"><i class="ti ti-clipboard-check"></i>1차 승인 대기<span style="background:#f3f4f6;color:var(--gray);font-size:11px;padding:2px 8px;border-radius:20px;margin-left:6px">${s1.length}건</span></div></div>
+    ${leaveTable(s1,true,1)}
+  </div>`:''}
+  ${s2.length?`<div class="card">
+    <div class="ch"><div class="ct"><i class="ti ti-checks"></i>최종 승인 대기<span style="background:#f3f4f6;color:var(--gray);font-size:11px;padding:2px 8px;border-radius:20px;margin-left:6px">${s2.length}건</span></div></div>
+    ${leaveTable(s2,true,2)}
+  </div>`:''}`;
+}
+
+function leaveTable(leaves,showActions,step){
+  if(!leaves.length) return `<div class="empty"><i class="ti ti-calendar-off"></i><p>내역이 없습니다</p></div>`;
+  return `<div class="tbl-wrap"><table>
+    <thead><tr><th>신청자</th><th>구분</th><th>기간</th><th>일수</th><th>사유</th><th>진행</th><th>상태</th>${showActions?'<th>처리</th>':''}</tr></thead>
+    <tbody>
+      ${leaves.map(l=>`<tr>
+        <td><div style="font-weight:500">${l.userName||''}</div><div style="font-size:11px;color:var(--gray)">${l.dept||''}</div></td>
+        <td><span class="type-tag">${l.type}</span></td>
+        <td style="font-size:12px;color:var(--gray);white-space:nowrap">${fmt(l.startDate)}${l.endDate!==l.startDate?' ~ '+fmt(l.endDate):''}</td>
+        <td style="font-weight:600;color:var(--blue)">${l.days}일</td>
+        <td><div class="ellipsis" title="${l.reason}">${l.reason}</div>
+          ${l.rejectedReason?`<div style="font-size:11px;color:var(--danger)">반려: ${l.rejectedReason}</div>`:''}</td>
+        <td><div style="display:flex;align-items:center;gap:2px">
+          <span class="step-dot done">기안</span>
+          <span class="step-line ${(l.status==='approved1'||l.status==='approved')?'done':''}"></span>
+          <span class="step-dot ${l.status==='rejected'?'rej':(l.status==='approved1'||l.status==='approved')?'done':''}">1차</span>
+          <span class="step-line ${l.status==='approved'?'done':''}"></span>
+          <span class="step-dot ${l.status==='approved'?'done':''}">최종</span>
+        </div></td>
+        <td><span class="status-badge ${SCLS[l.status]||''}"><span class="sdot"></span>${SLB[l.status]||l.status}</span></td>
+        ${showActions?`<td style="white-space:nowrap">
+          <button class="btn btn-ok btn-sm abtn" data-id="${l.id}" data-step="${step}" style="margin-bottom:3px"><i class="ti ti-check"></i>${step===1?'1차승인':'최종승인'}</button><br>
+          <button class="btn btn-ng btn-sm rbtn" data-id="${l.id}"><i class="ti ti-x"></i>반려</button>
+        </td>`:''}
+      </tr>`).join('')}
+    </tbody>
+  </table></div>`;
+}
+
+function bindPage(){
+  // 탭
+  document.querySelectorAll('.tab[data-tab]').forEach(b=>{
+    b.onclick=()=>{curTab=b.dataset.tab;renderPage();};
+  });
+  // 역할 저장
+  document.querySelectorAll('.save-role').forEach(btn=>{
+    btn.onclick=async()=>{
+      const uid=btn.dataset.uid,name=btn.dataset.name;
+      const role=document.getElementById(`role_${uid}`)?.value;
+      const dept=document.getElementById(`dept_${uid}`)?.value||'';
+      btn.disabled=true;
+      await updateDoc(doc(db,'users',uid),{role,dept,updatedAt:serverTimestamp()});
+      toast(`${name} → ${ROLES[role]} 저장 완료`,'ok');
+      await fetchData();
+    };
+  });
+  // 개인 부여
+  document.querySelectorAll('.do-grant').forEach(btn=>{
+    btn.onclick=async()=>{
+      const uid=btn.dataset.uid,name=btn.dataset.name;
+      const days=parseInt(document.getElementById(`gd_${uid}`)?.value)||0;
+      if(days<1){toast('일수를 입력해주세요','err');return;}
+      const u=allUsers.find(x=>x.uid===uid);
+      await updateDoc(doc(db,'users',uid),{totalLeave:(u?.totalLeave||0)+days});
+      toast(`${name}님에게 ${days}일 부여 완료`,'ok');
+      await fetchData();
+    };
+  });
+  // 일괄 부여
+  document.getElementById('doBulk')?.addEventListener('click',async()=>{
+    const days=parseInt(document.getElementById('bulkDays').value)||0;
+    if(days<1){toast('일수를 입력해주세요','err');return;}
+    if(!confirm(`전체 ${allUsers.length}명에게 ${days}일씩 부여할까요?`))return;
+    await Promise.all(allUsers.map(u=>updateDoc(doc(db,'users',u.uid),{totalLeave:(u.totalLeave||0)+days})));
+    toast(`전체 직원에게 ${days}일 일괄 부여 완료`,'ok');
+    await fetchData();
+  });
+  // 승인
+  document.querySelectorAll('.abtn').forEach(b=>{
+    b.onclick=()=>approveLeave(b.dataset.id,parseInt(b.dataset.step));
+  });
+  // 반려
+  document.querySelectorAll('.rbtn').forEach(b=>{
+    b.onclick=()=>openRejectModal(b.dataset.id);
+  });
+}
+
+async function approveLeave(id,step){
+  const l=allLeaves.find(x=>x.id===id);if(!l)return;
+  if(step===1){
+    await updateDoc(doc(db,'leaves',id),{status:'approved1',updatedAt:serverTimestamp()});
+    toast('1차 승인 완료','ok');
+  } else {
+    await updateDoc(doc(db,'leaves',id),{status:'approved',updatedAt:serverTimestamp()});
+    const uSnap=await getDoc(doc(db,'users',l.userId));
+    if(uSnap.exists()){const ud=uSnap.data();await updateDoc(doc(db,'users',l.userId),{usedLeave:(ud.usedLeave||0)+l.days});}
+    toast('최종 승인 완료 🎉','ok');
+  }
+  await fetchData();
+}
+
+function openRejectModal(id){
+  showModal(`
+    <div class="modal-title"><i class="ti ti-x"></i>반려 처리</div>
+    <div class="fg"><label class="fl">반려 사유</label>
+      <textarea class="fi" id="rR" rows="3" placeholder="반려 사유를 입력해주세요"></textarea></div>
+    <div class="mf">
+      <button class="btn" id="mCn">취소</button>
+      <button class="btn btn-ng" id="mRj"><i class="ti ti-x"></i>반려</button>
+    </div>
+  `);
+  document.getElementById('mCn').onclick=closeModal;
+  document.getElementById('mRj').onclick=async()=>{
+    const reason=document.getElementById('rR').value||'사유 없음';
+    await updateDoc(doc(db,'leaves',id),{status:'rejected',rejectedReason:reason,updatedAt:serverTimestamp()});
+    toast('반려 처리되었습니다','ok');closeModal();await fetchData();
+  };
+}
+
+function showModal(html){
+  closeModal();
+  const w=document.createElement('div');w.id='mW';
+  w.innerHTML=`<div class="modal-back" id="mB"><div class="modal">${html}</div></div>`;
+  document.body.appendChild(w);
+  document.getElementById('mB').onclick=e=>{if(e.target===e.currentTarget)closeModal();};
+}
+function closeModal(){document.getElementById('mW')?.remove();}
+
+document.getElementById('btnOut').addEventListener('click',()=>{
+  signOut(auth).then(()=>location.href='index.html');
+});
+</script>
+</body>
+</html>

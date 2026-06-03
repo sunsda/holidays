@@ -3,417 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>플라잉재팬 관리자 설정</title>
+<title>플라잉재팬 휴가대장</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--blue:#1a56db;--blue-l:#e8f0fe;--warn:#d97706;--ok:#059669;--danger:#dc2626;--border:rgba(0,0,0,0.08);--gray:#6b7280}
-body{font-family:'Noto Sans KR',sans-serif;background:#f0f4f8;color:#111827;font-size:14px;line-height:1.6;min-height:100vh}
-
-/* topbar */
-.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
-.logo-mark{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800}
-.avatar{width:30px;height:30px;border-radius:50%;background:var(--blue-l);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;overflow:hidden;flex-shrink:0}
-.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-
-/* layout */
-.wrap{max-width:600px;margin:48px auto;padding:0 16px}
-.card{background:#fff;border-radius:14px;border:1px solid var(--border);padding:28px;margin-bottom:16px}
-
-/* 상태 카드 */
-.status-card{text-align:center;padding:32px}
-.status-icon{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px}
-.status-icon.ok{background:#d1fae5;color:var(--ok)}
-.status-icon.warn{background:#fef3c7;color:var(--warn)}
-.status-icon.lock{background:#fee2e2;color:var(--danger)}
-
-/* form */
-.fg{margin-bottom:14px}
-.fl{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px}
-.fi{width:100%;padding:11px 13px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:#fff;font-family:inherit;color:#111;letter-spacing:2px;text-align:center}
-.fi:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
-.fi.err{border-color:var(--danger);box-shadow:0 0 0 3px rgba(220,38,38,.1)}
-
-/* buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:#374151;font-family:inherit;transition:.12s;width:100%}
-.btn-p{background:var(--blue);color:#fff;border-color:var(--blue)}.btn-p:hover{background:#1648c0}
-.btn-ok{background:var(--ok);color:#fff;border-color:var(--ok)}
-.btn-sm{padding:6px 12px;font-size:12px;width:auto}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-
-/* 역할 배지 */
-.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
-.badge-admin{background:#fef3c7;color:#92400e}
-.badge-a2{background:#fee2e2;color:#991b1b}
-.badge-a1{background:#dbeafe;color:#1e40af}
-.badge-user{background:#f3f4f6;color:#374151}
-
-/* 직원 목록 */
-.user-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
-.user-row:last-child{border-bottom:none}
-.user-info{flex:1;min-width:0}
-.user-name{font-size:13px;font-weight:600;color:#111}
-.user-email{font-size:11px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.role-sel{padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;background:#fff;font-family:inherit;cursor:pointer;color:#111}
-.save-btn{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--blue);background:var(--blue);color:#fff;font-family:inherit;transition:.1s;white-space:nowrap}
-
-/* info box */
-.info-box{background:var(--blue-l);border-radius:8px;padding:12px 14px;font-size:12px;color:#1e40af;margin-bottom:16px;line-height:1.8}
-.warn-box{background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;font-size:12px;color:#92400e;margin-bottom:16px;line-height:1.8}
-
-/* toast */
-.toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);animation:ti .2s ease}
-@keyframes ti{from{transform:translateY(14px);opacity:0}}
-.toast.ok{background:var(--ok)}.toast.err{background:var(--danger)}
-
-/* login */
-.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0f4f8,#e8f0fe);padding:24px}
-.login-card{background:#fff;border-radius:14px;padding:40px;width:100%;max-width:400px;box-shadow:0 4px 24px rgba(0,0,0,.09);text-align:center}
-.google-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:13px;border:1.5px solid #d1d5db;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;font-family:inherit;transition:.15s}
-.google-btn:hover{background:#f8faff;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
-
-.spinner{width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f4f8;color:#111;font-size:14px}
+.page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:#fff;border-radius:16px;padding:40px;width:100%;max-width:400px;box-shadow:0 4px 24px rgba(0,0,0,.08);text-align:center}
+.logo{width:64px;height:64px;background:#1a56db;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;font-weight:800;color:#fff}
+h1{font-size:22px;font-weight:700;margin-bottom:6px}
+.sub{font-size:13px;color:#6b7280;margin-bottom:28px;line-height:1.8}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px;border:1.5px solid #d1d5db;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;font-family:inherit;transition:.15s}
+.google-btn:hover{background:#f8faff;border-color:#1a56db;box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+.google-btn:disabled{opacity:.5;cursor:not-allowed}
+.err{background:#fee2e2;color:#991b1b;border-radius:8px;padding:10px 13px;font-size:13px;margin-bottom:16px}
+.spinner{width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#1a56db;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-.section-title{font-size:15px;font-weight:700;color:#111;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.section-title i{font-size:18px;color:var(--blue)}
-
-/* step tabs */
-.steps{display:flex;gap:0;margin-bottom:24px}
-.step-item{flex:1;text-align:center;position:relative}
-.step-circle{width:28px;height:28px;border-radius:50%;border:2px solid #e5e7eb;background:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:11px;font-weight:700;color:#9ca3af;position:relative;z-index:1}
-.step-item.done .step-circle{background:var(--ok);border-color:var(--ok);color:#fff}
-.step-item.active .step-circle{border-color:var(--blue);color:var(--blue)}
-.step-label{font-size:11px;color:#9ca3af}
-.step-item.done .step-label{color:var(--ok)}
-.step-item.active .step-label{color:var(--blue);font-weight:600}
-.step-line{position:absolute;top:13px;left:50%;right:-50%;height:2px;background:#e5e7eb;z-index:0}
-.step-item.done .step-line{background:var(--ok)}
+.loading-text{font-size:13px;color:#6b7280}
 </style>
 </head>
 <body>
-<div id="root">
-  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px">
-    <div class="spinner"></div>
-    <div style="font-size:13px;color:#6b7280">로딩 중...</div>
+<div class="page">
+  <div class="card" id="card">
+    <div class="logo">FJ</div>
+    <h1>플라잉재팬 휴가대장</h1>
+    <p class="sub">Flying Japan Leave Management<br>
+      <span style="font-size:12px;color:#9ca3af">@flyingjp.com 구글 계정으로 로그인하세요</span></p>
+    <div id="errMsg" class="err" style="display:none"></div>
+    <button class="google-btn" id="btnLogin">
+      <svg width="20" height="20" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Google 계정으로 로그인
+    </button>
+    <p style="margin-top:18px;font-size:11px;color:#9ca3af;line-height:1.9">
+      @flyingjp.com 계정만 접근 가능합니다<br>첫 로그인 시 계정이 자동 생성됩니다
+    </p>
   </div>
 </div>
 
 <script type="module">
-import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, serverTimestamp }
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-const firebaseConfig = {
-  apiKey:            "AIzaSyAvwdN5mhg2sL4D7zaG-AGEwsK1YfgmfVI",
-  authDomain:        "flyingjapan-leave.firebaseapp.com",
-  projectId:         "flyingjapan-leave",
-  storageBucket:     "flyingjapan-leave.firebasestorage.app",
-  messagingSenderId: "973822019022",
-  appId:             "1:973822019022:web:fd5473aadf14061539979f"
+const FIREBASE_CONFIG = {
+  apiKey:"AIzaSyAvwdN5mhg2sL4D7zaG-AGEwsK1YfgmfVI",
+  authDomain:"flyingjapan-leave.firebaseapp.com",
+  projectId:"flyingjapan-leave",
+  storageBucket:"flyingjapan-leave.firebasestorage.app",
+  messagingSenderId:"973822019022",
+  appId:"1:973822019022:web:fd5473aadf14061539979f"
 };
+const ADMIN_EMAILS   = ["seonyang@flyingjp.com"];
+const COMPANY_DOMAIN = "flyingjp.com";
 
-// ── 관리자 승격 비밀 코드 (원하는 코드로 바꾸세요) ────
-const ADMIN_SECRET_CODE = "FLYINGJP2024";
-const COMPANY_DOMAIN    = "flyingjp.com";
-
-const app      = initializeApp(firebaseConfig);
+const app      = initializeApp(FIREBASE_CONFIG);
 const auth     = getAuth(app);
 const db       = getFirestore(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ hd: COMPANY_DOMAIN });
 
-const ROLES    = {admin:'최고관리자', approver2:'2차승인자(임원)', approver1:'1차승인자', user:'일반직원'};
-const ROLE_CLS = {admin:'badge-admin', approver2:'badge-a2', approver1:'badge-a1', user:'badge-user'};
-
-let me        = null;
-let myProfile = null;
-let allUsers  = [];
-let step      = 1; // 1=코드입력, 2=역할관리
-
-const dn  = u => u.name || u.email?.split('@')[0] || '';
-const ini = u => dn(u).slice(0,2).toUpperCase();
-
-function toast(msg, t=''){
-  document.querySelectorAll('.toast').forEach(e=>e.remove());
-  const el=document.createElement('div');
-  el.className='toast '+t;
-  el.innerHTML=`<i class="ti ${t==='ok'?'ti-check':t==='err'?'ti-x':'ti-info-circle'}"></i>${msg}`;
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(), 3200);
+function showLoading(msg='이동 중...'){
+  document.getElementById('card').innerHTML = `
+    <div class="spinner"></div>
+    <div class="loading-text">${msg}</div>`;
+}
+function showErr(msg){
+  const el = document.getElementById('errMsg');
+  if(el){ el.textContent=msg; el.style.display='block'; }
 }
 
-// ── 인증 ─────────────────────────────────────────────
 onAuthStateChanged(auth, async fbUser => {
-  if(fbUser){
-    const domain = fbUser.email?.split('@')[1];
-    if(domain !== COMPANY_DOMAIN){
-      await signOut(auth);
-      render('error', `@${COMPANY_DOMAIN} 계정만 접근 가능합니다.`);
-      return;
-    }
-    me = fbUser;
-    // Firestore 프로필 가져오기
-    const ref  = doc(db,'users',fbUser.uid);
-    const snap = await getDoc(ref);
-    if(!snap.exists()){
-      const p = {
-        uid: fbUser.uid, name: fbUser.displayName||'', email: fbUser.email,
-        photoURL: fbUser.photoURL||null, role:'user', dept:'',
-        totalLeave:15, usedLeave:0, createdAt:serverTimestamp()
-      };
-      await setDoc(ref, p);
-      myProfile = p;
-    } else {
-      myProfile = {uid:fbUser.uid, ...snap.data()};
-    }
-    // 이미 admin이면 바로 역할 관리 탭으로
-    if(myProfile.role === 'admin'){
-      step = 2;
-      await fetchUsers();
-    }
-    render('app');
+  if(!fbUser) return;
+  const domain = fbUser.email?.split('@')[1];
+  if(domain !== COMPANY_DOMAIN){
+    const { signOut } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+    await signOut(auth);
+    showErr(`@${COMPANY_DOMAIN} 계정만 접근 가능합니다.`);
+    return;
+  }
+  showLoading('계정 확인 중...');
+
+  // Firestore 프로필 확인/생성
+  const ref  = doc(db, 'users', fbUser.uid);
+  const snap = await getDoc(ref);
+  let role = 'user';
+  if(!snap.exists()){
+    await setDoc(ref, {
+      uid: fbUser.uid,
+      name: fbUser.displayName || '',
+      email: fbUser.email,
+      photoURL: fbUser.photoURL || null,
+      role: 'user',
+      dept: '',
+      totalLeave: 15,
+      usedLeave: 0,
+      createdAt: serverTimestamp()
+    });
   } else {
-    me = null; myProfile = null;
-    render('login');
+    role = snap.data().role || 'user';
+  }
+
+  // 역할에 따라 페이지 이동
+  if(ADMIN_EMAILS.includes(fbUser.email) || role === 'admin'){
+    location.href = 'admin.html';
+  } else if(role === 'approver1' || role === 'approver2'){
+    location.href = 'approve.html';
+  } else {
+    location.href = 'main.html';
   }
 });
 
-async function fetchUsers(){
-  const snap = await getDocs(collection(db,'users'));
-  allUsers = snap.docs.map(d=>({uid:d.id,...d.data()}));
-}
-
-// ── 렌더 ─────────────────────────────────────────────
-function render(type, err=''){
-  const root = document.getElementById('root');
-  if(type==='login')  root.innerHTML = loginPage();
-  if(type==='error')  root.innerHTML = loginPage(err);
-  if(type==='app')    root.innerHTML = appPage();
-  bind();
-}
-
-// ── 로그인 ────────────────────────────────────────────
-function loginPage(err=''){
-  return `
-  <div class="login-page">
-    <div class="login-card">
-      <div style="width:64px;height:64px;background:var(--blue);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:22px;font-weight:800;color:#fff">FJ</div>
-      <div style="font-size:20px;font-weight:700;margin-bottom:6px">관리자 설정 페이지</div>
-      <div style="font-size:13px;color:#6b7280;margin-bottom:24px;line-height:1.8">
-        플라잉재팬 휴가대장<br>
-        <span style="font-size:12px;color:#9ca3af">@${COMPANY_DOMAIN} 계정으로 로그인하세요</span>
-      </div>
-      ${err?`<div style="background:#fee2e2;color:#991b1b;border-radius:8px;padding:10px 13px;font-size:13px;margin-bottom:14px">${err}</div>`:''}
-      <button class="google-btn" id="btnLogin">
-        <svg width="20" height="20" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Google 계정으로 로그인
-      </button>
-    </div>
-  </div>`;
-}
-
-// ── 앱 ───────────────────────────────────────────────
-function appPage(){
-  const isAdmin = myProfile?.role === 'admin';
-  return `
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="logo-mark">FJ</div>
-      <span style="font-size:14px;font-weight:700;color:#111">관리자 설정</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="avatar">${me.photoURL?`<img src="${me.photoURL}">`:(me.displayName||me.email||'').slice(0,2).toUpperCase()}</div>
-      <span style="font-size:12px;color:#6b7280">${me.email}</span>
-      <button class="btn btn-sm" id="btnOut" style="width:auto"><i class="ti ti-logout"></i>로그아웃</button>
-    </div>
-  </div>
-
-  <div class="wrap">
-    <!-- 진행 단계 -->
-    <div class="steps">
-      <div class="step-item ${isAdmin?'done':'active'}">
-        <div class="step-circle">${isAdmin?'<i class="ti ti-check" style="font-size:12px"></i>':'1'}</div>
-        <div class="step-line"></div>
-        <div class="step-label">관리자 인증</div>
-      </div>
-      <div class="step-item ${isAdmin?'active':''}">
-        <div class="step-circle">2</div>
-        <div class="step-label">역할 관리</div>
-      </div>
-    </div>
-
-    ${isAdmin ? adminPanel() : secretCodePanel()}
-  </div>`;
-}
-
-// ── Step 1: 비밀 코드 입력 ─────────────────────────────
-function secretCodePanel(){
-  return `
-  <div class="card">
-    <div class="section-title"><i class="ti ti-lock"></i>관리자 인증</div>
-    <div class="info-box">
-      <i class="ti ti-info-circle"></i>
-      관리자 비밀 코드를 입력하면 본인 계정이 <b>최고관리자</b>로 승격됩니다.<br>
-      비밀 코드는 HTML 파일의 <code>ADMIN_SECRET_CODE</code> 값입니다.
-    </div>
-    <div style="background:#f9fafb;border-radius:10px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
-      <div class="avatar" style="width:40px;height:40px;font-size:14px">${me.photoURL?`<img src="${me.photoURL}">`:(me.displayName||'').slice(0,2).toUpperCase()}</div>
-      <div>
-        <div style="font-size:13px;font-weight:600">${me.displayName||me.email}</div>
-        <div style="font-size:12px;color:#6b7280">${me.email}</div>
-        <span class="badge badge-user" style="margin-top:3px;display:inline-block">일반직원</span>
-      </div>
-    </div>
-    <div class="fg">
-      <label class="fl">관리자 비밀 코드</label>
-      <input class="fi" type="password" id="secretInput" placeholder="비밀 코드 입력" autocomplete="off">
-      <div id="codeErr" style="font-size:12px;color:var(--danger);margin-top:5px;display:none"><i class="ti ti-alert-circle"></i> 코드가 올바르지 않습니다</div>
-    </div>
-    <button class="btn btn-p" id="btnVerify">
-      <i class="ti ti-shield-check"></i>관리자로 승격하기
-    </button>
-  </div>
-  <div class="warn-box">
-    ⚠️ 이 페이지 URL은 직원들과 공유하지 마세요.<br>
-    관리자 설정 완료 후 역할 배부가 끝나면 이 파일을 삭제하거나 코드를 변경하세요.
-  </div>`;
-}
-
-// ── Step 2: 역할 관리 ─────────────────────────────────
-function adminPanel(){
-  return `
-  <div class="card" style="margin-bottom:14px">
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#d1fae5;border-radius:8px;margin-bottom:20px">
-      <i class="ti ti-circle-check" style="font-size:22px;color:var(--ok)"></i>
-      <div>
-        <div style="font-size:13px;font-weight:600;color:#065f46">관리자 인증 완료</div>
-        <div style="font-size:12px;color:#047857">${me.email} 계정으로 최고관리자 권한이 부여되었습니다</div>
-      </div>
-    </div>
-
-    <div class="section-title"><i class="ti ti-users"></i>직원 역할 관리</div>
-    <div class="info-box">
-      역할을 변경하고 <b>저장</b> 버튼을 누르면 즉시 반영됩니다.<br>
-      변경된 역할은 메인 앱(<a href="index.html" style="color:var(--blue)">index.html</a>)에서 바로 적용됩니다.
-    </div>
-
-    ${allUsers.length === 0 ? `
-      <div style="text-align:center;padding:28px;color:#9ca3af">
-        <i class="ti ti-user-off" style="font-size:32px;display:block;margin-bottom:8px;opacity:.4"></i>
-        아직 로그인한 직원이 없습니다<br>
-        <span style="font-size:12px">직원들이 메인 앱에서 로그인하면 여기에 표시됩니다</span>
-      </div>` : allUsers.map(u=>`
-      <div class="user-row">
-        <div class="avatar" style="width:36px;height:36px;font-size:12px;flex-shrink:0">
-          ${u.photoURL?`<img src="${u.photoURL}">`:`${ini(u)}`}
-        </div>
-        <div class="user-info">
-          <div class="user-name">${dn(u)}</div>
-          <div class="user-email">${u.email}</div>
-          <span class="badge ${ROLE_CLS[u.role]||'badge-user'}" style="margin-top:2px;display:inline-block">${ROLES[u.role]||'일반직원'}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
-          <select class="role-sel" id="role_${u.uid}">
-            <option value="user"      ${(!u.role||u.role==='user')    ?'selected':''}>일반직원</option>
-            <option value="approver1" ${u.role==='approver1'?'selected':''}>1차승인자</option>
-            <option value="approver2" ${u.role==='approver2'?'selected':''}>2차승인자(임원)</option>
-            <option value="admin"     ${u.role==='admin'    ?'selected':''}>최고관리자</option>
-          </select>
-          <button class="save-btn" data-uid="${u.uid}" data-name="${dn(u)}">저장</button>
-        </div>
-      </div>`).join('')}
-  </div>
-
-  <div class="card" style="background:#fffbeb;border-color:#fde68a">
-    <div style="font-size:13px;font-weight:600;color:#92400e;margin-bottom:10px;display:flex;align-items:center;gap:7px">
-      <i class="ti ti-info-circle" style="color:#d97706;font-size:16px"></i>역할별 권한 안내
-    </div>
-    <div style="font-size:13px;color:#78350f;line-height:2.2">
-      📝 <b>일반직원</b> — 휴가 신청 / 본인 내역 조회<br>
-      ✅ <b>1차승인자</b> — 기안 → 1차 승인/반려 처리<br>
-      🏆 <b>2차승인자(임원)</b> — 1차승인 → 최종 승인/반려 처리<br>
-      🔑 <b>최고관리자</b> — 모든 권한 + 메인 앱 관리자 탭 접근
-    </div>
-  </div>
-
-  <div style="text-align:center;margin-top:8px">
-    <a href="index.html" style="font-size:13px;color:var(--blue);text-decoration:none;display:inline-flex;align-items:center;gap:5px">
-      <i class="ti ti-arrow-left" style="font-size:15px"></i>메인 앱으로 돌아가기
-    </a>
-  </div>`;
-}
-
-// ── 이벤트 바인딩 ──────────────────────────────────────
-function bind(){
-  // 로그인
-  document.getElementById('btnLogin')?.addEventListener('click', async () => {
-    try { await signInWithPopup(auth, provider); }
-    catch(e){ if(e.code!=='auth/popup-closed-by-user') toast('로그인 실패','err'); }
-  });
-
-  // 로그아웃
-  document.getElementById('btnOut')?.addEventListener('click', ()=>signOut(auth));
-
-  // 코드 검증
-  document.getElementById('btnVerify')?.addEventListener('click', async () => {
-    const input = document.getElementById('secretInput').value.trim().toUpperCase();
-    const errEl = document.getElementById('codeErr');
-    const field = document.getElementById('secretInput');
-
-    if(input !== ADMIN_SECRET_CODE){
-      field.classList.add('err');
-      errEl.style.display='block';
-      setTimeout(()=>{ field.classList.remove('err'); errEl.style.display='none'; },2500);
-      return;
-    }
-
-    // 코드 맞음 → admin으로 승격
-    try {
-      await updateDoc(doc(db,'users',me.uid), {role:'admin', updatedAt:serverTimestamp()});
-      myProfile.role = 'admin';
-      step = 2;
-      await fetchUsers();
-      toast('관리자로 승격되었습니다! 🎉','ok');
-      render('app');
-    } catch(e) {
-      toast('오류: '+e.message,'err');
-    }
-  });
-
-  // 엔터키로 코드 제출
-  document.getElementById('secretInput')?.addEventListener('keydown', e=>{
-    if(e.key==='Enter') document.getElementById('btnVerify')?.click();
-  });
-
-  // 역할 저장
-  document.querySelectorAll('.save-btn').forEach(btn=>{
-    btn.addEventListener('click', async () => {
-      const uid  = btn.dataset.uid;
-      const name = btn.dataset.name;
-      const role = document.getElementById(`role_${uid}`)?.value;
-      if(!role) return;
-      btn.disabled=true; btn.textContent='저장 중...';
-      try {
-        await updateDoc(doc(db,'users',uid), {role, updatedAt:serverTimestamp()});
-        toast(`${name} → ${ROLES[role]} 변경 완료`,'ok');
-        await fetchUsers();
-        render('app');
-      } catch(e) {
-        toast('오류: '+e.message,'err');
-        btn.disabled=false; btn.textContent='저장';
-      }
-    });
-  });
-}
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const btn = document.getElementById('btnLogin');
+  btn.disabled = true;
+  try {
+    await signInWithPopup(auth, provider);
+  } catch(e) {
+    btn.disabled = false;
+    if(e.code !== 'auth/popup-closed-by-user') showErr('로그인 실패: ' + e.message);
+  }
+});
 </script>
 </body>
 </html>
