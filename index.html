@@ -3,110 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>플라잉재팬 휴가대장</title>
+<title>플라잉재팬 관리자 설정</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--blue:#1a56db;--blue-l:#e8f0fe;--warn:#d97706;--ok:#059669;--danger:#dc2626;--border:rgba(0,0,0,0.08);--gray:#6b7280}
-body{font-family:'Noto Sans KR',sans-serif;background:#f0f4f8;color:#111827;font-size:14px;line-height:1.6}
-.shell{display:flex;min-height:100vh}
-.sidebar{width:220px;min-width:220px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10;overflow-y:auto}
-.main{margin-left:220px;flex:1;padding:24px}
-.page{max-width:1100px;margin:0 auto}
-.sb-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.logo-mark{width:38px;height:38px;background:var(--blue);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800;flex-shrink:0}
-.logo-text{font-size:13px;font-weight:700;color:#111;line-height:1.4}
-.logo-text span{font-size:11px;color:var(--gray);font-weight:400}
-.sb-nav{flex:1;padding:10px 8px}
-.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;color:var(--gray);font-size:13px;font-weight:500;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:inherit;transition:.1s}
-.nav-item:hover{background:#f3f4f6;color:#111}
-.nav-item.active{background:var(--blue-l);color:var(--blue)}
-.nav-item i{font-size:17px}
-.nav-badge{margin-left:auto;background:var(--blue);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px}
-.sb-user{padding:12px 14px;border-top:1px solid var(--border)}
-.user-row{display:flex;align-items:center;gap:8px}
-.avatar{width:32px;height:32px;border-radius:50%;background:var(--blue-l);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;overflow:hidden}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f4f8;color:#111827;font-size:14px;line-height:1.6;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.logo-mark{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800}
+.topbar-title{font-size:15px;font-weight:700;color:#111}
+.topbar-badge{background:#fee2e2;color:#991b1b;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--blue-l);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;overflow:hidden}
 .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.icon-btn{background:none;border:none;color:var(--gray);cursor:pointer;padding:4px;border-radius:4px;font-size:16px}
-.icon-btn:hover{color:var(--danger);background:#fee2e2}
-.ph{margin-bottom:20px}.pt{font-size:20px;font-weight:700}.ps{font-size:13px;color:var(--gray);margin-top:3px}
-.card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:16px}
-.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.ct{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
-.ct i{font-size:17px;color:var(--blue)}
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
-.stat-card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:14px 16px}
-.sl{font-size:11px;color:var(--gray);font-weight:500;margin-bottom:4px;display:flex;align-items:center;gap:5px}
-.sv{font-size:26px;font-weight:700}.ss{font-size:11px;color:var(--gray);margin-top:3px}
-.prog{background:#f3f4f6;border-radius:4px;height:5px;overflow:hidden;margin-top:8px}
-.prog-bar{height:100%;background:var(--blue);border-radius:4px}
+.wrap{max-width:960px;margin:0 auto;padding:24px}
+.card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:18px;margin-bottom:16px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.ct{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;color:#111}
+.ct i{font-size:18px;color:var(--blue)}
 .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
 .badge-admin{background:#fef3c7;color:#92400e}.badge-a2{background:#fee2e2;color:#991b1b}
 .badge-a1{background:#dbeafe;color:#1e40af}.badge-user{background:#f3f4f6;color:#374151}
-.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
-.sdot{width:5px;height:5px;border-radius:50%;background:currentColor}
-.s-pending{background:#fef3c7;color:#92400e}.s-a1{background:#dbeafe;color:#1e40af}
-.s-ok{background:#d1fae5;color:#065f46}.s-reject{background:#fee2e2;color:#991b1b}
-.type-tag{display:inline-block;padding:2px 7px;background:#f3f4f6;border-radius:4px;font-size:11px;font-weight:500}
-.chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;background:#f3f4f6;color:var(--gray);margin-left:6px}
-.step-dot{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:#f3f4f6;color:var(--gray);white-space:nowrap}
-.step-dot.done{background:var(--blue-l);color:var(--blue)}.step-dot.rej{background:#fee2e2;color:var(--danger)}
-.step-line{display:inline-block;width:12px;height:2px;background:#e5e7eb;margin:0 2px;vertical-align:middle;flex-shrink:0}
-.step-line.done{background:var(--blue)}
-.tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:#f9fafb}
-.ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:#374151;font-family:inherit;transition:.1s;white-space:nowrap}
+.badge-pending{background:#f3f4f6;color:#374151;border:1px dashed #d1d5db}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:#374151;font-family:inherit;transition:.12s;white-space:nowrap}
 .btn:hover{background:#f3f4f6}.btn i{font-size:15px}
 .btn-p{background:var(--blue);color:#fff;border-color:var(--blue)}.btn-p:hover{background:#1648c0}
 .btn-ok{background:var(--ok);color:#fff;border-color:var(--ok)}.btn-ok:hover{background:#047857}
 .btn-ng{background:var(--danger);color:#fff;border-color:var(--danger)}.btn-ng:hover{background:#b91c1c}
 .btn-sm{padding:5px 10px;font-size:12px}
-.form-sel{padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;background:#fff;font-family:inherit;cursor:pointer;color:#111}
-.dept-input{border:1px solid var(--border);border-radius:5px;padding:4px 7px;font-size:12px;width:100px;font-family:inherit;background:#fff;color:inherit}
+.btn-warn{background:var(--warn);color:#fff;border-color:var(--warn)}
+.form-sel{padding:6px 9px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;background:#fff;font-family:inherit;cursor:pointer;color:#111}
+.dept-input{border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;width:110px;font-family:inherit;background:#fff;color:inherit}
+.leave-input{border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:12px;width:60px;font-family:inherit;background:#fff;color:inherit;text-align:center}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#f9fafb}
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal{background:#fff;border-radius:14px;padding:22px;width:100%;max-width:440px;animation:mi .15s ease}
+@keyframes mi{from{transform:translateY(10px) scale(.98);opacity:0}}
+.modal-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:16px;color:#111}
+.modal-title i{font-size:19px;color:var(--blue)}
+.mf{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 .fg{margin-bottom:12px}.fl{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px}
 .fi{width:100%;padding:9px 11px;border:1px solid #d1d5db;border-radius:7px;font-size:13px;background:#fff;font-family:inherit;color:#111}
 .fi:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
-textarea.fi{resize:vertical;min-height:70px}select.fi{cursor:pointer}
-.info-box{background:var(--blue-l);border-radius:7px;padding:9px 12px;font-size:12px;color:#1e40af;margin-bottom:14px}
-.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
-.modal{background:#fff;border-radius:14px;padding:22px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;animation:mi .15s ease}
-@keyframes mi{from{transform:translateY(10px) scale(.98);opacity:0}}
-.modal-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:18px;color:#111}
-.modal-title i{font-size:20px;color:var(--blue)}
-.mf{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
-.steps-row{display:flex;align-items:center;justify-content:center;margin-bottom:18px}
-.st{text-align:center;flex:1}
-.sc{width:26px;height:26px;border-radius:50%;border:2px solid #e5e7eb;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:11px;font-weight:700;color:var(--gray)}
-.st.active .sc{border-color:var(--blue);color:var(--blue)}.sl2{font-size:10px;color:var(--gray)}
-.st-line{height:2px;background:#e5e7eb;flex:1;margin-top:-14px}
-.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0f4f8,#e8f0fe);padding:24px}
-.login-card{background:#fff;border-radius:14px;padding:40px;width:100%;max-width:400px;box-shadow:0 4px 24px rgba(0,0,0,.09);text-align:center}
-.login-logo{width:64px;height:64px;background:var(--blue);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;font-weight:800;color:#fff}
-.login-title{font-size:22px;font-weight:700;margin-bottom:6px}
-.login-sub{font-size:13px;color:var(--gray);margin-bottom:28px;line-height:1.9}
-.google-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px;border:1.5px solid #d1d5db;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;font-family:inherit;transition:.15s}
-.google-btn:hover{background:#f8faff;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
-.google-btn:disabled{opacity:.6;cursor:not-allowed}
-.err-box{background:#fee2e2;color:#991b1b;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:8px}
-.loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:#f0f4f8}
-.spinner{width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
 .toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);animation:ti .2s ease}
 @keyframes ti{from{transform:translateY(14px);opacity:0}}
 .toast.ok{background:var(--ok)}.toast.err{background:var(--danger)}
-.empty{text-align:center;padding:36px;color:var(--gray)}.empty i{font-size:34px;opacity:.35;display:block;margin-bottom:10px}.empty p{font-size:13px}
-@media(max-width:700px){.sidebar{display:none}.main{margin-left:0;padding:14px}}
+.empty{text-align:center;padding:32px;color:var(--gray)}.empty i{font-size:32px;opacity:.35;display:block;margin-bottom:8px}.empty p{font-size:13px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:#fff;border-radius:10px;border:1px solid var(--border);padding:14px 16px}
+.sl{font-size:11px;color:var(--gray);font-weight:500;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.sv{font-size:24px;font-weight:700}
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0f4f8,#e8f0fe);padding:24px}
+.login-card{background:#fff;border-radius:14px;padding:40px;width:100%;max-width:400px;box-shadow:0 4px 24px rgba(0,0,0,.09);text-align:center}
+.login-logo{width:64px;height:64px;background:#991b1b;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:22px;font-weight:800;color:#fff}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:13px;border:1.5px solid #d1d5db;border-radius:10px;background:#fff;cursor:pointer;font-size:14px;font-weight:500;font-family:inherit;transition:.15s}
+.google-btn:hover{background:#f8faff;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+.err-box{background:#fee2e2;color:#991b1b;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;text-align:left}
+.spinner{width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tab-btns{display:flex;gap:4px;margin-bottom:16px;background:#f3f4f6;padding:4px;border-radius:8px;width:fit-content}
+.tab-btn{padding:7px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--gray);font-family:inherit;transition:.1s}
+.tab-btn.active{background:#fff;color:#111;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.new-badge{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--danger);margin-left:5px;vertical-align:middle}
 </style>
 </head>
 <body>
 <div id="root">
-  <div class="loading-screen">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:#f0f4f8">
     <div class="spinner"></div>
     <div style="font-size:13px;color:#6b7280">로딩 중...</div>
   </div>
@@ -116,10 +86,9 @@ textarea.fi{resize:vertical;min-height:70px}select.fi{cursor:pointer}
 import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, addDoc, query, orderBy, serverTimestamp }
+import { getFirestore, collection, doc, getDoc, getDocs, updateDoc, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-// ── Firebase 설정 ─────────────────────────────────────
 const firebaseConfig = {
   apiKey:            "AIzaSyAvwdN5mhg2sL4D7zaG-AGEwsK1YfgmfVI",
   authDomain:        "flyingjapan-leave.firebaseapp.com",
@@ -128,34 +97,28 @@ const firebaseConfig = {
   messagingSenderId: "973822019022",
   appId:             "1:973822019022:web:fd5473aadf14061539979f"
 };
-const COMPANY_DOMAIN = "flyingjp.com";
+
+// ── 관리자 이메일 목록 (여기에 관리자 이메일 추가) ────────
+const SUPER_ADMINS = [
+  "seonyang@flyingjp.com",   // ← 실제 관리자 이메일로 바꾸세요
+];
 
 const app      = initializeApp(firebaseConfig);
 const auth     = getAuth(app);
 const db       = getFirestore(app);
 const provider = new GoogleAuthProvider();
-provider.setCustomParameters({ hd: COMPANY_DOMAIN });
 
-// ── 상태 ─────────────────────────────────────────────
-let profile   = null;
-let allLeaves = [];
-let allUsers  = [];
-let pg        = 'dashboard';
-
-// ── 상수 ─────────────────────────────────────────────
 const ROLES    = {admin:'최고관리자', approver2:'2차승인자(임원)', approver1:'1차승인자', user:'일반직원'};
 const ROLE_CLS = {admin:'badge-admin', approver2:'badge-a2', approver1:'badge-a1', user:'badge-user'};
-const SLB      = {pending:'기안완료', approved1:'1차승인', approved:'최종승인', rejected:'반려'};
-const SCLS     = {pending:'s-pending', approved1:'s-a1', approved:'s-ok', rejected:'s-reject'};
-const LTYPES   = ['연차','반차(오전)','반차(오후)','병가','특별휴가','경조사'];
 
-const rem    = u  => (u.totalLeave||0)-(u.usedLeave||0);
-const fmt    = d  => d ? d.replace(/-/g,'.') : '-';
-const canA1  = r  => r==='approver1'||r==='admin';
-const canA2  = r  => r==='approver2'||r==='admin';
-const today  = () => new Date().toISOString().slice(0,10);
-const dn     = u  => u.name || u.email?.split('@')[0] || '';
-const ini    = u  => dn(u).slice(0,2).toUpperCase();
+let me       = null;
+let allUsers = [];
+let allLeaves= [];
+let tab      = 'users'; // users | pending
+
+const rem  = u => (u.totalLeave||0)-(u.usedLeave||0);
+const dn   = u => u.name || u.email?.split('@')[0] || '';
+const ini  = u => dn(u).slice(0,2).toUpperCase();
 
 function toast(msg, t=''){
   document.querySelectorAll('.toast').forEach(e=>e.remove());
@@ -169,64 +132,53 @@ function toast(msg, t=''){
 // ── 인증 ─────────────────────────────────────────────
 onAuthStateChanged(auth, async fbUser => {
   if(fbUser){
-    const domain = fbUser.email?.split('@')[1];
-    if(domain !== COMPANY_DOMAIN){
+    // 관리자 이메일 체크
+    if(!SUPER_ADMINS.includes(fbUser.email)){
       await signOut(auth);
-      render(`@${COMPANY_DOMAIN} 계정만 접근 가능합니다.`);
+      render('접근 권한이 없습니다. 관리자 계정으로 로그인하세요.');
       return;
     }
-    const ref  = doc(db, 'users', fbUser.uid);
-    const snap = await getDoc(ref);
-    if(!snap.exists()){
-      const p = {
-        uid: fbUser.uid,
-        name: fbUser.displayName || '',
-        email: fbUser.email,
-        photoURL: fbUser.photoURL || null,
-        role: 'user', dept: '',
-        totalLeave: 15, usedLeave: 0,
-        createdAt: serverTimestamp()
-      };
-      await setDoc(ref, p);
-      profile = p;
-    } else {
-      profile = { uid: fbUser.uid, ...snap.data() };
+    // Firestore에서 role도 체크
+    const snap = await getDoc(doc(db,'users',fbUser.uid));
+    if(snap.exists() && snap.data().role !== 'admin'){
+      // role이 admin이 아니면 자동으로 admin으로 업데이트
+      await updateDoc(doc(db,'users',fbUser.uid), {role:'admin'});
     }
+    me = {uid:fbUser.uid, name:fbUser.displayName||'', email:fbUser.email, photoURL:fbUser.photoURL||null};
     await fetchData();
   } else {
-    profile = null;
+    me = null;
     render();
   }
 });
 
 async function fetchData(){
-  if(!profile) return;
-  const [lSnap, uSnap] = await Promise.all([
-    getDocs(query(collection(db,'leaves'), orderBy('createdAt','desc'))),
-    getDocs(collection(db,'users'))
+  const [uSnap, lSnap] = await Promise.all([
+    getDocs(collection(db,'users')),
+    getDocs(collection(db,'leaves'))
   ]);
-  allLeaves = lSnap.docs.map(d=>({id:d.id,...d.data()}));
   allUsers  = uSnap.docs.map(d=>({uid:d.id,...d.data()}));
+  allLeaves = lSnap.docs.map(d=>({id:d.id,...d.data()}));
   render();
 }
 
 // ── 렌더 ─────────────────────────────────────────────
-function render(errMsg=''){
-  document.getElementById('root').innerHTML = profile ? shell() : loginPage(errMsg);
+function render(err=''){
+  document.getElementById('root').innerHTML = me ? appShell() : loginPage(err);
   bind();
 }
 
-// ── 로그인 ────────────────────────────────────────────
 function loginPage(err=''){
   return `
   <div class="login-page">
     <div class="login-card">
-      <div class="login-logo">FJ</div>
-      <div class="login-title">플라잉재팬 휴가대장</div>
-      <div class="login-sub">Flying Japan Leave Management<br>
-        <span style="font-size:12px;color:#9ca3af">@${COMPANY_DOMAIN} 구글 계정으로 로그인하세요</span>
+      <div class="login-logo"><i class="ti ti-shield-lock" style="font-size:26px"></i></div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:6px">관리자 전용 페이지</div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:24px;line-height:1.8">
+        플라잉재팬 휴가대장 관리자 설정<br>
+        <span style="font-size:12px;color:#9ca3af">관리자 Google 계정으로만 접근 가능</span>
       </div>
-      ${err?`<div class="err-box"><i class="ti ti-alert-circle"></i>${err}</div>`:''}
+      ${err?`<div class="err-box"><i class="ti ti-alert-circle"></i> ${err}</div>`:''}
       <button class="google-btn" id="btnLogin">
         <svg width="20" height="20" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -234,468 +186,244 @@ function loginPage(err=''){
           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
         </svg>
-        Google 계정으로 로그인
+        관리자 Google 계정으로 로그인
       </button>
-      <p style="margin-top:20px;font-size:11px;color:#9ca3af;line-height:2">
-        회사 구글 계정(@${COMPANY_DOMAIN})만 접근 가능합니다<br>
-        첫 로그인 시 계정이 자동 생성됩니다<br>
-        계정 문의: 경영지원팀
-      </p>
     </div>
   </div>`;
 }
 
-// ── 앱 쉘 ────────────────────────────────────────────
-function shell(){
-  const myL = allLeaves.filter(l=>l.userId===profile.uid);
-  const pc  = allLeaves.filter(l=>
-    (canA1(profile.role)&&l.status==='pending') ||
-    (canA2(profile.role)&&l.status==='approved1')
-  ).length;
-  const isAp = profile.role !== 'user';
+function appShell(){
+  const newUsers  = allUsers.filter(u=>u.role==='user'||!u.role).length;
+  const pendingL  = allLeaves.filter(l=>l.status==='pending'||l.status==='approved1').length;
   return `
-  <div class="shell">
-    <nav class="sidebar">
-      <div class="sb-logo">
-        <div class="logo-mark">FJ</div>
-        <div class="logo-text">플라잉재팬<br><span>휴가대장</span></div>
-      </div>
-      <div class="sb-nav">
-        ${ni('dashboard','ti-home','대시보드')}
-        ${ni('myLeave','ti-calendar-event','내 휴가')}
-        ${isAp ? ni('pending','ti-clipboard-check','승인 대기',pc) : ''}
-        ${ni('all','ti-list','전체 내역')}
-        ${profile.role==='admin' ? ni('admin','ti-settings','관리자') : ''}
-      </div>
-      <div class="sb-user">
-        <div class="user-row">
-          <div class="avatar">
-            ${profile.photoURL
-              ? `<img src="${profile.photoURL}">`
-              : `<span>${ini(profile)}</span>`}
-          </div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:12px;font-weight:600;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${dn(profile)}</div>
-            <div style="font-size:10px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${profile.email}</div>
-          </div>
-          <button class="icon-btn" id="btnOut" title="로그아웃"><i class="ti ti-logout"></i></button>
-        </div>
-        <div style="margin-top:8px">
-          <span class="badge ${ROLE_CLS[profile.role]}">${ROLES[profile.role]}</span>
-          ${profile.dept ? `<span style="font-size:11px;color:#6b7280;margin-left:6px">${profile.dept}</span>` : ''}
-        </div>
-      </div>
-    </nav>
-    <main class="main">${renderPg(myL, pc)}</main>
-  </div>`;
-}
-
-function ni(id, icon, label, badge=0){
-  return `<button class="nav-item ${pg===id?'active':''}" data-page="${id}">
-    <i class="ti ${icon}"></i>${label}
-    ${badge>0 ? `<span class="nav-badge">${badge}</span>` : ''}
-  </button>`;
-}
-
-function renderPg(myL, pc){
-  if(pg==='dashboard') return pgDash(myL, pc);
-  if(pg==='myLeave')   return pgMine(myL);
-  if(pg==='pending')   return pgPend();
-  if(pg==='all')       return pgAll(myL);
-  if(pg==='admin')     return pgAdmin();
-  return '';
-}
-
-// ── 대시보드 ──────────────────────────────────────────
-function pgDash(myL, pc){
-  const r = rem(profile);
-  const pct = Math.min(100, Math.round(((profile.usedLeave||0)/(profile.totalLeave||15))*100));
-  return `
-  <div class="page">
-    <div class="ph">
-      <div class="pt">안녕하세요, ${dn(profile)}님 👋</div>
-      <div class="ps">${new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'})}</div>
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark">FJ</div>
+      <div class="topbar-title">휴가대장 관리자</div>
+      <span class="topbar-badge"><i class="ti ti-shield" style="font-size:11px"></i> ADMIN</span>
     </div>
+    <div class="topbar-right">
+      <div class="avatar">${me.photoURL?`<img src="${me.photoURL}">`:(me.name||me.email).slice(0,2).toUpperCase()}</div>
+      <span style="font-size:12px;color:#6b7280">${me.email}</span>
+      <button class="btn btn-sm" id="btnOut"><i class="ti ti-logout"></i>로그아웃</button>
+    </div>
+  </div>
+  <div class="wrap">
+
+    <!-- 통계 -->
     <div class="stat-grid">
-      <div class="stat-card">
-        <div class="sl"><i class="ti ti-beach"></i>잔여 휴가</div>
-        <div class="sv" style="color:var(--blue)">${r}일</div>
-        <div class="ss">총 ${profile.totalLeave}일 중 ${profile.usedLeave}일 사용</div>
-        <div class="prog"><div class="prog-bar" style="width:${pct}%"></div></div>
-      </div>
-      <div class="stat-card">
-        <div class="sl"><i class="ti ti-clock"></i>승인 대기</div>
-        <div class="sv" style="color:${pc>0?'var(--warn)':'var(--ok)'}">${pc}건</div>
-        <div class="ss">${pc>0?'처리 필요한 항목 있음':'모두 처리 완료'}</div>
-      </div>
-      <div class="stat-card">
-        <div class="sl"><i class="ti ti-file-text"></i>내 신청</div>
-        <div class="sv">${myL.length}건</div>
-        <div class="ss">최종승인 ${myL.filter(l=>l.status==='approved').length}건</div>
-      </div>
-      <div class="stat-card">
-        <div class="sl"><i class="ti ti-shield"></i>역할</div>
-        <div style="margin-top:8px"><span class="badge ${ROLE_CLS[profile.role]}" style="font-size:12px;padding:4px 12px">${ROLES[profile.role]}</span></div>
-        <div class="ss" style="margin-top:8px">${profile.dept||'부서 미지정'}</div>
-      </div>
+      <div class="stat-card"><div class="sl"><i class="ti ti-users"></i>전체 직원</div><div class="sv">${allUsers.length}명</div></div>
+      <div class="stat-card"><div class="sl"><i class="ti ti-user-check"></i>승인자</div><div class="sv">${allUsers.filter(u=>u.role==='approver1'||u.role==='approver2').length}명</div></div>
+      <div class="stat-card"><div class="sl"><i class="ti ti-clock"></i>휴가 승인대기</div><div class="sv" style="color:${pendingL>0?'var(--warn)':'var(--ok)'}">${pendingL}건</div></div>
+      <div class="stat-card"><div class="sl"><i class="ti ti-calendar"></i>전체 휴가신청</div><div class="sv">${allLeaves.length}건</div></div>
     </div>
-    <div class="card">
-      <div class="ch">
-        <div class="ct"><i class="ti ti-history"></i>최근 신청 내역</div>
-        <button class="btn btn-p btn-sm" id="btnNew"><i class="ti ti-plus"></i>휴가 신청</button>
-      </div>
-      ${tbl(myL.slice(0,5), false, false)}
+
+    <!-- 탭 -->
+    <div class="tab-btns">
+      <button class="tab-btn ${tab==='users'?'active':''}" data-tab="users">
+        <i class="ti ti-users" style="font-size:14px;margin-right:5px"></i>직원 관리
+      </button>
+      <button class="tab-btn ${tab==='grant'?'active':''}" data-tab="grant">
+        <i class="ti ti-gift" style="font-size:14px;margin-right:5px"></i>휴가 부여
+      </button>
+      <button class="tab-btn ${tab==='role'?'active':''}" data-tab="role">
+        <i class="ti ti-shield-half" style="font-size:14px;margin-right:5px"></i>역할 관리
+        ${newUsers>0?`<span class="new-badge"></span>`:''}
+      </button>
     </div>
+
+    ${tab==='users' ? tabUsers() : tab==='grant' ? tabGrant() : tabRole()}
+
   </div>`;
 }
 
-// ── 내 휴가 ───────────────────────────────────────────
-function pgMine(myL){
+// ── 탭: 직원 전체 현황 ────────────────────────────────
+function tabUsers(){
+  if(!allUsers.length) return `<div class="card"><div class="empty"><i class="ti ti-users-off"></i><p>가입한 직원이 없습니다</p></div></div>`;
   return `
-  <div class="page">
-    <div class="ph"><div class="pt">내 휴가</div><div class="ps">나의 휴가 신청 현황과 잔여 일수</div></div>
-    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
-      <div class="stat-card"><div class="sl">총 부여</div><div class="sv">${profile.totalLeave}일</div></div>
-      <div class="stat-card"><div class="sl">사용</div><div class="sv" style="color:var(--warn)">${profile.usedLeave}일</div></div>
-      <div class="stat-card"><div class="sl">잔여</div><div class="sv" style="color:var(--blue)">${rem(profile)}일</div></div>
+  <div class="card">
+    <div class="ch">
+      <div class="ct"><i class="ti ti-users"></i>전체 직원 현황</div>
+      <span style="font-size:12px;color:#6b7280">총 ${allUsers.length}명</span>
     </div>
-    <div class="card">
-      <div class="ch">
-        <div class="ct"><i class="ti ti-calendar-event"></i>신청 내역</div>
-        <button class="btn btn-p btn-sm" id="btnNew"><i class="ti ti-plus"></i>새 휴가 신청</button>
-      </div>
-      ${tbl(myL, false, false)}
-    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>직원</th><th>이메일</th><th>부서</th><th>역할</th><th>부여/사용/잔여</th><th>가입일</th></tr></thead>
+      <tbody>
+        ${allUsers.map(u=>`<tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:9px">
+              <div class="avatar" style="width:28px;height:28px;font-size:10px">${u.photoURL?`<img src="${u.photoURL}">`:`${ini(u)}`}</div>
+              <span style="font-weight:500">${dn(u)}</span>
+            </div>
+          </td>
+          <td style="font-size:12px;color:#6b7280">${u.email}</td>
+          <td style="font-size:12px">${u.dept||'<span style="color:#d1d5db">미지정</span>'}</td>
+          <td><span class="badge ${ROLE_CLS[u.role]||'badge-user'}">${ROLES[u.role]||'일반직원'}</span></td>
+          <td style="font-size:12px">
+            <span style="color:var(--blue);font-weight:600">${u.totalLeave||0}</span> /
+            <span style="color:var(--warn)">${u.usedLeave||0}</span> /
+            <span style="color:var(--ok)">${rem(u)}</span>일
+          </td>
+          <td style="font-size:11px;color:#9ca3af">${u.createdAt?.seconds ? new Date(u.createdAt.seconds*1000).toLocaleDateString('ko-KR') : '-'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>
   </div>`;
 }
 
-// ── 승인 대기 ─────────────────────────────────────────
-function pgPend(){
-  const s1 = allLeaves.filter(l=>canA1(profile.role)&&l.status==='pending');
-  const s2 = allLeaves.filter(l=>canA2(profile.role)&&l.status==='approved1');
-  if(!s1.length&&!s2.length) return `
-  <div class="page">
-    <div class="ph"><div class="pt">승인 대기</div></div>
-    <div class="card"><div class="empty"><i class="ti ti-check"></i><p>처리할 항목이 없습니다</p></div></div>
-  </div>`;
+// ── 탭: 휴가 부여 ─────────────────────────────────────
+function tabGrant(){
   return `
-  <div class="page">
-    <div class="ph"><div class="pt">승인 대기</div><div class="ps">처리가 필요한 휴가 신청</div></div>
-    ${s1.length ? `<div class="card" style="margin-bottom:16px">
-      <div class="ch"><div class="ct"><i class="ti ti-clipboard-check"></i>1차 승인 대기<span class="chip">${s1.length}건</span></div></div>
-      ${tbl(s1, true, true)}
-    </div>` : ''}
-    ${s2.length ? `<div class="card">
-      <div class="ch"><div class="ct"><i class="ti ti-checks"></i>최종 승인 대기<span class="chip">${s2.length}건</span></div></div>
-      ${tbl(s2, true, true)}
-    </div>` : ''}
+  <div class="card">
+    <div class="ch">
+      <div class="ct"><i class="ti ti-gift"></i>개인별 휴가 부여</div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>직원</th><th>이메일</th><th>부서</th><th>현재 총 부여일</th><th>사용</th><th>잔여</th><th>추가 부여</th></tr></thead>
+      <tbody>
+        ${allUsers.map(u=>`<tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:9px">
+              <div class="avatar" style="width:28px;height:28px;font-size:10px">${u.photoURL?`<img src="${u.photoURL}">`:`${ini(u)}`}</div>
+              <span style="font-weight:500">${dn(u)}</span>
+            </div>
+          </td>
+          <td style="font-size:12px;color:#6b7280">${u.email}</td>
+          <td style="font-size:12px">${u.dept||'-'}</td>
+          <td style="font-weight:600;color:var(--blue)">${u.totalLeave||0}일</td>
+          <td style="color:var(--warn)">${u.usedLeave||0}일</td>
+          <td style="color:var(--ok);font-weight:600">${rem(u)}일</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="number" class="leave-input grant-days" data-uid="${u.uid}" min="1" max="60" value="5" placeholder="일수">
+              <button class="btn btn-p btn-sm do-grant" data-uid="${u.uid}" data-name="${dn(u)}">
+                <i class="ti ti-plus"></i>부여
+              </button>
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="ch">
+      <div class="ct"><i class="ti ti-calendar-stats"></i>전체 일괄 부여</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-size:13px;color:#6b7280">전체 직원에게 일괄로</span>
+      <input type="number" class="fi" id="bulkDays" min="1" max="30" value="1" style="width:80px">
+      <span style="font-size:13px;color:#6b7280">일 추가 부여</span>
+      <button class="btn btn-warn" id="doBulk"><i class="ti ti-gift"></i>전체 일괄 부여</button>
+    </div>
   </div>`;
 }
 
-// ── 전체 내역 ─────────────────────────────────────────
-function pgAll(myL){
-  const isA = profile.role!=='user';
-  const src  = isA ? allLeaves : myL;
+// ── 탭: 역할 관리 ─────────────────────────────────────
+function tabRole(){
+  const newUsers = allUsers.filter(u=>!u.role||u.role==='user');
   return `
-  <div class="page">
-    <div class="ph"><div class="pt">전체 내역</div><div class="ps">${isA?'전체 직원 휴가 내역':'나의 모든 휴가 내역'}</div></div>
-    <div class="card">
-      <div class="ch">
-        <div class="ct"><i class="ti ti-list"></i>휴가 내역</div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap">
-          ${['all','pending','approved1','approved','rejected'].map(s=>`
-            <button class="btn btn-sm fbtn" data-f="${s}" style="font-size:11px">${s==='all'?'전체':SLB[s]}</button>`).join('')}
-        </div>
-      </div>
-      <div id="allT">${tbl(src, isA, false)}</div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="ch">
+      <div class="ct"><i class="ti ti-shield-half"></i>역할 및 부서 관리</div>
+      <span style="font-size:12px;color:#6b7280">변경 즉시 저장됩니다</span>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>직원</th><th>이메일</th><th>부서</th><th>현재 역할</th><th>역할 변경</th><th>처리</th></tr></thead>
+      <tbody>
+        ${allUsers.map(u=>`<tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:9px">
+              <div class="avatar" style="width:28px;height:28px;font-size:10px">${u.photoURL?`<img src="${u.photoURL}">`:`${ini(u)}`}</div>
+              <span style="font-weight:500">${dn(u)}</span>
+            </div>
+          </td>
+          <td style="font-size:12px;color:#6b7280">${u.email}</td>
+          <td>
+            <input class="dept-input dep-inp" data-uid="${u.uid}" value="${u.dept||''}" placeholder="부서명 입력">
+          </td>
+          <td><span class="badge ${ROLE_CLS[u.role]||'badge-user'}">${ROLES[u.role]||'일반직원'}</span></td>
+          <td>
+            <select class="form-sel role-sel" data-uid="${u.uid}">
+              <option value="user"      ${(!u.role||u.role==='user')    ?'selected':''}>일반직원</option>
+              <option value="approver1" ${u.role==='approver1'?'selected':''}>1차승인자</option>
+              <option value="approver2" ${u.role==='approver2'?'selected':''}>2차승인자(임원)</option>
+              <option value="admin"     ${u.role==='admin'    ?'selected':''}>최고관리자</option>
+            </select>
+          </td>
+          <td>
+            <button class="btn btn-p btn-sm save-role" data-uid="${u.uid}" data-name="${dn(u)}">
+              <i class="ti ti-check"></i>저장
+            </button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="card" style="background:#fffbeb;border-color:#fde68a">
+    <div class="ct" style="margin-bottom:10px;color:#92400e"><i class="ti ti-info-circle" style="color:#d97706"></i>역할 안내</div>
+    <div style="font-size:13px;color:#78350f;line-height:2.1">
+      📝 <b>일반직원</b> — 휴가 신청만 가능<br>
+      ✅ <b>1차승인자</b> — 기안된 휴가 1차 승인/반려<br>
+      🏆 <b>2차승인자(임원)</b> — 1차 승인된 휴가 최종 승인/반려<br>
+      🔑 <b>최고관리자</b> — 모든 권한 + 이 관리자 페이지 접근
     </div>
   </div>`;
-}
-
-// ── 관리자 ────────────────────────────────────────────
-function pgAdmin(){
-  if(profile.role!=='admin') return '<div class="page"><div class="card"><div class="empty">접근 권한 없음</div></div></div>';
-  return `
-  <div class="page">
-    <div class="ph"><div class="pt">관리자 설정</div><div class="ps">직원 역할 관리 · 휴가 부여 · 승인자 임명</div></div>
-    <div class="card">
-      <div class="ch">
-        <div class="ct"><i class="ti ti-users"></i>직원 관리</div>
-        <span style="font-size:12px;color:#6b7280">총 ${allUsers.length}명</span>
-      </div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>직원</th><th>이메일</th><th>부서</th><th>역할</th><th>부여/사용/잔여</th><th>역할 변경</th><th>휴가 부여</th></tr></thead>
-        <tbody>
-          ${allUsers.map(u=>`<tr>
-            <td>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div class="avatar" style="width:28px;height:28px;font-size:10px">
-                  ${u.photoURL ? `<img src="${u.photoURL}">` : ini(u)}
-                </div>
-                <span style="font-weight:500">${dn(u)}</span>
-              </div>
-            </td>
-            <td style="font-size:11px;color:#6b7280">${u.email}</td>
-            <td><input class="dept-input" data-uid="${u.uid}" value="${u.dept||''}" placeholder="부서명"></td>
-            <td><span class="badge ${ROLE_CLS[u.role]}">${ROLES[u.role]}</span></td>
-            <td>
-              <span style="color:var(--blue);font-weight:600">${u.totalLeave||0}</span> /
-              <span style="color:var(--warn)">${u.usedLeave||0}</span> /
-              <span style="color:var(--ok)">${rem(u)}</span>일
-            </td>
-            <td>
-              <select class="form-sel rsel" data-uid="${u.uid}">
-                <option value="user"      ${u.role==='user'     ?'selected':''}>일반직원</option>
-                <option value="approver1" ${u.role==='approver1'?'selected':''}>1차승인자</option>
-                <option value="approver2" ${u.role==='approver2'?'selected':''}>2차승인자</option>
-                <option value="admin"     ${u.role==='admin'    ?'selected':''}>최고관리자</option>
-              </select>
-            </td>
-            <td><button class="btn btn-p btn-sm gbtn" data-uid="${u.uid}" data-name="${dn(u)}"><i class="ti ti-gift"></i>부여</button></td>
-          </tr>`).join('')}
-        </tbody>
-      </table></div>
-    </div>
-    <div class="card">
-      <div class="ct" style="margin-bottom:12px"><i class="ti ti-info-circle"></i>승인 워크플로우</div>
-      <div style="font-size:13px;color:#6b7280;line-height:2.2">
-        📝 <b>기안</b> — 모든 직원 신청 가능<br>
-        ✅ <b>1차 승인</b> — <span class="badge badge-a1">1차승인자</span> 처리<br>
-        🏆 <b>최종 승인</b> — <span class="badge badge-a2">2차승인자(임원)</span> 처리 → 사용일 자동 차감
-      </div>
-    </div>
-  </div>`;
-}
-
-// ── 테이블 ────────────────────────────────────────────
-function tbl(leaves, showU, showA){
-  if(!leaves.length) return `<div class="empty"><i class="ti ti-calendar-off"></i><p>내역이 없습니다</p></div>`;
-  return `<div class="tbl-wrap"><table>
-    <thead><tr>
-      ${showU ? '<th>신청자</th>' : ''}
-      <th>구분</th><th>기간</th><th>일수</th><th>사유</th><th>진행</th><th>상태</th>
-      ${showA ? '<th>처리</th>' : ''}
-    </tr></thead>
-    <tbody>
-      ${leaves.map(l=>`<tr>
-        ${showU ? `<td>
-          <div style="font-weight:500;font-size:13px">${l.userName||l.userEmail?.split('@')[0]||''}</div>
-          <div style="font-size:11px;color:#6b7280">${l.dept||''}</div>
-        </td>` : ''}
-        <td><span class="type-tag">${l.type}</span></td>
-        <td style="font-size:12px;color:#6b7280;white-space:nowrap">${fmt(l.startDate)}${l.endDate!==l.startDate?' ~ '+fmt(l.endDate):''}</td>
-        <td style="font-weight:600;color:var(--blue)">${l.days}일</td>
-        <td><div class="ellipsis" title="${l.reason}">${l.reason}</div>
-          ${l.rejectedReason ? `<div style="font-size:11px;color:var(--danger)">반려: ${l.rejectedReason}</div>` : ''}</td>
-        <td>${stepB(l.status)}</td>
-        <td><span class="status-badge ${SCLS[l.status]||''}"><span class="sdot"></span>${SLB[l.status]||l.status}</span></td>
-        ${showA ? `<td style="white-space:nowrap">
-          ${canA1(profile.role)&&l.status==='pending' ? `
-            <button class="btn btn-ok btn-sm abtn" data-id="${l.id}" data-step="1" style="margin-bottom:3px"><i class="ti ti-check"></i>1차승인</button><br>
-            <button class="btn btn-ng btn-sm rbtn" data-id="${l.id}"><i class="ti ti-x"></i>반려</button>` : ''}
-          ${canA2(profile.role)&&l.status==='approved1' ? `
-            <button class="btn btn-ok btn-sm abtn" data-id="${l.id}" data-step="2" style="margin-bottom:3px"><i class="ti ti-check"></i>최종승인</button><br>
-            <button class="btn btn-ng btn-sm rbtn" data-id="${l.id}"><i class="ti ti-x"></i>반려</button>` : ''}
-        </td>` : ''}
-      </tr>`).join('')}
-    </tbody>
-  </table></div>`;
-}
-
-function stepB(s){
-  const s1=s==='approved1'||s==='approved', s2=s==='approved', rj=s==='rejected';
-  return `<div style="display:flex;align-items:center;gap:2px">
-    <span class="step-dot done">기안</span>
-    <span class="step-line ${s1&&!rj?'done':''}"></span>
-    <span class="step-dot ${rj?'rej':s1?'done':''}">1차</span>
-    <span class="step-line ${s2?'done':''}"></span>
-    <span class="step-dot ${s2?'done':''}">최종</span>
-  </div>`;
-}
-
-// ── 모달 ─────────────────────────────────────────────
-function showModal(html){
-  closeModal();
-  const w=document.createElement('div'); w.id='mW';
-  w.innerHTML=`<div class="modal-back" id="mB"><div class="modal">${html}</div></div>`;
-  document.body.appendChild(w);
-  document.getElementById('mB').onclick=e=>{ if(e.target===e.currentTarget) closeModal(); };
-}
-function closeModal(){ document.getElementById('mW')?.remove(); }
-
-function openNew(){
-  const a1s = allUsers.filter(u=>canA1(u.role));
-  const a2s = allUsers.filter(u=>canA2(u.role));
-  if(!a1s.length || !a2s.length){
-    toast('승인자가 없습니다. 관리자에게 역할 설정을 요청하세요.','err'); return;
-  }
-  showModal(`
-    <div class="modal-title"><i class="ti ti-calendar-plus"></i>휴가 신청</div>
-    <div class="steps-row">
-      <div class="st active"><div class="sc">1</div><div class="sl2">기안</div></div>
-      <div class="st-line"></div>
-      <div class="st"><div class="sc">2</div><div class="sl2">1차승인</div></div>
-      <div class="st-line"></div>
-      <div class="st"><div class="sc">3</div><div class="sl2">최종승인</div></div>
-    </div>
-    <div class="info-box">잔여 휴가: <b>${rem(profile)}일</b></div>
-    <div class="fg"><label class="fl">휴가 종류</label>
-      <select class="fi" id="mT">${LTYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fg"><label class="fl">시작일</label><input type="date" class="fi" id="mS" value="${today()}"></div>
-      <div class="fg"><label class="fl">종료일</label><input type="date" class="fi" id="mE" value="${today()}"></div>
-    </div>
-    <div class="fg"><label class="fl">사유</label>
-      <textarea class="fi" id="mR" rows="3" placeholder="휴가 사유를 입력해주세요"></textarea></div>
-    <div class="fg"><label class="fl">1차 승인자</label>
-      <select class="fi" id="mA1">${a1s.map(u=>`<option value="${u.uid}">${dn(u)} (${u.dept||ROLES[u.role]})</option>`).join('')}</select></div>
-    <div class="fg"><label class="fl">2차 승인자 (임원)</label>
-      <select class="fi" id="mA2">${a2s.map(u=>`<option value="${u.uid}">${dn(u)} (${u.dept||ROLES[u.role]})</option>`).join('')}</select></div>
-    <div class="mf">
-      <button class="btn" id="mCn">취소</button>
-      <button class="btn btn-p" id="mSb"><i class="ti ti-send"></i>기안 제출</button>
-    </div>
-  `);
-  document.getElementById('mCn').onclick = closeModal;
-  document.getElementById('mSb').onclick = submitLeave;
-}
-
-function openReject(id){
-  showModal(`
-    <div class="modal-title"><i class="ti ti-x"></i>반려 처리</div>
-    <div class="fg"><label class="fl">반려 사유</label>
-      <textarea class="fi" id="rR" rows="3" placeholder="반려 사유를 입력해주세요"></textarea></div>
-    <div class="mf">
-      <button class="btn" id="mCn">취소</button>
-      <button class="btn btn-ng" id="mRj"><i class="ti ti-x"></i>반려 처리</button>
-    </div>
-  `);
-  document.getElementById('mCn').onclick = closeModal;
-  document.getElementById('mRj').onclick = async () => {
-    const reason = document.getElementById('rR').value || '사유 없음';
-    await updateDoc(doc(db,'leaves',id), {status:'rejected', rejectedReason:reason, updatedAt:serverTimestamp()});
-    toast('반려 처리되었습니다','ok'); closeModal(); await fetchData();
-  };
-}
-
-function openGrant(uid, name){
-  showModal(`
-    <div class="modal-title"><i class="ti ti-gift"></i>휴가 부여</div>
-    <div style="font-size:13px;color:#6b7280;margin-bottom:14px"><b>${name}</b>님에게 추가 휴가를 부여합니다</div>
-    <div class="fg"><label class="fl">부여 일수</label>
-      <input type="number" class="fi" id="gD" min="1" max="60" value="5"></div>
-    <div class="mf">
-      <button class="btn" id="mCn">취소</button>
-      <button class="btn btn-p" id="mGr"><i class="ti ti-check"></i>부여</button>
-    </div>
-  `);
-  document.getElementById('mCn').onclick = closeModal;
-  document.getElementById('mGr').onclick = async () => {
-    const days = parseInt(document.getElementById('gD').value)||0;
-    if(days<1){ toast('일수를 입력해주세요','err'); return; }
-    const u = allUsers.find(x=>x.uid===uid);
-    await updateDoc(doc(db,'users',uid), {totalLeave:(u?.totalLeave||15)+days});
-    toast(`${name}님에게 ${days}일 부여 완료`,'ok'); closeModal(); await fetchData();
-  };
-}
-
-// ── 액션 ─────────────────────────────────────────────
-async function submitLeave(){
-  const type  = document.getElementById('mT').value;
-  const s     = document.getElementById('mS').value;
-  const e     = document.getElementById('mE').value;
-  const reason= document.getElementById('mR').value.trim();
-  const a1id  = document.getElementById('mA1').value;
-  const a2id  = document.getElementById('mA2').value;
-  if(!reason){ toast('사유를 입력해주세요','err'); return; }
-  const days = type.includes('반차') ? 0.5 : Math.max(1, Math.round((new Date(e)-new Date(s))/864e5)+1);
-  if(days > rem(profile)){ toast(`잔여 휴가 부족 (잔여: ${rem(profile)}일)`,'err'); return; }
-  const a1u = allUsers.find(u=>u.uid===a1id);
-  const a2u = allUsers.find(u=>u.uid===a2id);
-  await addDoc(collection(db,'leaves'), {
-    userId:   profile.uid,
-    userName: dn(profile),
-    userEmail:profile.email,
-    dept:     profile.dept||'',
-    type, startDate:s, endDate:e, days, reason,
-    status:   'pending',
-    approver1Id:   a1id, approver1Name: dn(a1u)||'',
-    approver2Id:   a2id, approver2Name: dn(a2u)||'',
-    rejectedReason:'',
-    createdAt: serverTimestamp(), updatedAt: serverTimestamp()
-  });
-  toast('기안 제출 완료','ok'); closeModal(); await fetchData();
-}
-
-async function approveLeave(id, step){
-  const l = allLeaves.find(x=>x.id===id);
-  if(!l) return;
-  if(step===1){
-    await updateDoc(doc(db,'leaves',id), {status:'approved1', updatedAt:serverTimestamp()});
-    toast('1차 승인 완료','ok');
-  } else {
-    await updateDoc(doc(db,'leaves',id), {status:'approved', updatedAt:serverTimestamp()});
-    const uSnap = await getDoc(doc(db,'users',l.userId));
-    if(uSnap.exists()){
-      const ud = uSnap.data();
-      await updateDoc(doc(db,'users',l.userId), {usedLeave:(ud.usedLeave||0)+l.days});
-    }
-    toast('최종 승인 완료 🎉','ok');
-  }
-  await fetchData();
 }
 
 // ── 이벤트 바인딩 ──────────────────────────────────────
 function bind(){
   // 로그인
   document.getElementById('btnLogin')?.addEventListener('click', async () => {
-    const btn = document.getElementById('btnLogin');
-    btn.disabled = true; btn.textContent = '로그인 중...';
-    try { await signInWithPopup(auth, provider); }
-    catch(err) {
-      btn.disabled = false;
-      btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google 계정으로 로그인`;
-      if(err.code !== 'auth/popup-closed-by-user') toast('로그인 실패: '+err.message,'err');
-    }
+    try{ await signInWithPopup(auth, provider); }
+    catch(e){ if(e.code!=='auth/popup-closed-by-user') toast('로그인 실패','err'); }
   });
   // 로그아웃
-  document.getElementById('btnOut')?.addEventListener('click', () => signOut(auth));
-  // 네비
-  document.querySelectorAll('.nav-item[data-page]').forEach(b => {
-    b.onclick = () => { pg = b.dataset.page; render(); };
+  document.getElementById('btnOut')?.addEventListener('click', ()=>signOut(auth));
+  // 탭
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(b=>{
+    b.onclick=()=>{ tab=b.dataset.tab; render(); };
   });
-  // 새 신청
-  document.getElementById('btnNew')?.addEventListener('click', openNew);
-  // 승인
-  document.querySelectorAll('.abtn').forEach(b => {
-    b.onclick = () => approveLeave(b.dataset.id, parseInt(b.dataset.step));
-  });
-  // 반려
-  document.querySelectorAll('.rbtn').forEach(b => { b.onclick = () => openReject(b.dataset.id); });
-  // 부여
-  document.querySelectorAll('.gbtn').forEach(b => { b.onclick = () => openGrant(b.dataset.uid, b.dataset.name); });
-  // 역할 변경
-  document.querySelectorAll('.rsel').forEach(s => {
-    s.onchange = async () => {
-      await updateDoc(doc(db,'users',s.dataset.uid), {role:s.value});
-      if(profile.uid===s.dataset.uid) profile.role = s.value;
-      toast(`역할 → ${ROLES[s.value]}`,'ok');
+
+  // 개인 휴가 부여
+  document.querySelectorAll('.do-grant').forEach(btn=>{
+    btn.onclick=async()=>{
+      const uid  = btn.dataset.uid;
+      const name = btn.dataset.name;
+      const inp  = document.querySelector(`.grant-days[data-uid="${uid}"]`);
+      const days = parseInt(inp?.value)||0;
+      if(days<1){ toast('일수를 입력해주세요','err'); return; }
+      const u = allUsers.find(x=>x.uid===uid);
+      await updateDoc(doc(db,'users',uid), {totalLeave:(u?.totalLeave||0)+days});
+      toast(`${name}님에게 ${days}일 부여 완료`,'ok');
       await fetchData();
     };
   });
-  // 부서 변경
-  document.querySelectorAll('.dept-input').forEach(i => {
-    i.onblur = async () => {
-      await updateDoc(doc(db,'users',i.dataset.uid), {dept:i.value});
-      if(profile.uid===i.dataset.uid) profile.dept = i.value;
-    };
+
+  // 전체 일괄 부여
+  document.getElementById('doBulk')?.addEventListener('click', async()=>{
+    const days = parseInt(document.getElementById('bulkDays').value)||0;
+    if(days<1){ toast('일수를 입력해주세요','err'); return; }
+    if(!confirm(`전체 ${allUsers.length}명에게 ${days}일씩 부여할까요?`)) return;
+    await Promise.all(allUsers.map(u=>
+      updateDoc(doc(db,'users',u.uid), {totalLeave:(u.totalLeave||0)+days})
+    ));
+    toast(`전체 직원에게 ${days}일 일괄 부여 완료`,'ok');
+    await fetchData();
   });
-  // 필터
-  document.querySelectorAll('.fbtn').forEach(b => {
-    b.onclick = () => {
-      const f = b.dataset.f, isA = profile.role!=='user';
-      const src = isA ? allLeaves : allLeaves.filter(l=>l.userId===profile.uid);
-      document.getElementById('allT').innerHTML = tbl(f==='all'?src:src.filter(l=>l.status===f), isA, false);
+
+  // 역할 저장
+  document.querySelectorAll('.save-role').forEach(btn=>{
+    btn.onclick=async()=>{
+      const uid  = btn.dataset.uid;
+      const name = btn.dataset.name;
+      const roleSel = document.querySelector(`.role-sel[data-uid="${uid}"]`);
+      const deptInp = document.querySelector(`.dep-inp[data-uid="${uid}"]`);
+      const role = roleSel?.value;
+      const dept = deptInp?.value||'';
+      await updateDoc(doc(db,'users',uid), {role, dept, updatedAt:serverTimestamp()});
+      toast(`${name}님 → ${ROLES[role]} / 부서: ${dept||'미지정'}`,'ok');
+      await fetchData();
     };
   });
 }
