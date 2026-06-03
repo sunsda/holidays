@@ -8,9 +8,10 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans KR',sans-serif;background:#f0f4f8;color:#111;font-size:14px}
-.page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-.card{background:#fff;border-radius:16px;padding:40px;width:100%;max-width:400px;box-shadow:0 4px 24px rgba(0,0,0,.08);text-align:center}
+:root{--blue:#1a56db;--blue-l:#e8f0fe;--border:rgba(0,0,0,0.08);--gray:#6b7280;--ok:#059669;--danger:#dc2626}
+body{font-family:'Noto Sans KR',sans-serif;background:#f0f4f8;color:#111827;font-size:14px}
+.page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#f0f4f8,#e8f0fe)}
+.card{background:#fff;border-radius:16px;padding:40px;width:100%;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,.08);text-align:center}
 .logo{width:64px;height:64px;background:#1a56db;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;font-weight:800;color:#fff}
 h1{font-size:22px;font-weight:700;margin-bottom:6px}
 .sub{font-size:13px;color:#6b7280;margin-bottom:28px;line-height:1.8}
@@ -20,12 +21,25 @@ h1{font-size:22px;font-weight:700;margin-bottom:6px}
 .err{background:#fee2e2;color:#991b1b;border-radius:8px;padding:10px 13px;font-size:13px;margin-bottom:16px}
 .spinner{width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#1a56db;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-size:13px;color:#6b7280}
+/* 이름 설정 화면 */
+.setup-card{background:#fff;border-radius:16px;padding:40px;width:100%;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.setup-title{font-size:20px;font-weight:700;margin-bottom:6px;text-align:center}
+.setup-sub{font-size:13px;color:#6b7280;margin-bottom:28px;text-align:center;line-height:1.8}
+.avatar-wrap{width:64px;height:64px;border-radius:50%;background:#e8f0fe;margin:0 auto 20px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#1a56db}
+.avatar-wrap img{width:100%;height:100%;object-fit:cover}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px}
+.fi{width:100%;padding:11px 13px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:#fff;font-family:inherit;color:#111}
+.fi:focus{outline:none;border-color:#1a56db;box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+.btn-start{width:100%;padding:13px;background:#1a56db;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-start:hover{background:#1648c0}
+.btn-start:disabled{opacity:.5;cursor:not-allowed}
+.hint{font-size:12px;color:#9ca3af;margin-top:6px}
 </style>
 </head>
 <body>
-<div class="page">
-  <div class="card" id="card">
+<div class="page" id="root">
+  <div class="card">
     <div class="logo">FJ</div>
     <h1>플라잉재팬 휴가대장</h1>
     <p class="sub">Flying Japan Leave Management<br>
@@ -41,16 +55,16 @@ h1{font-size:22px;font-weight:700;margin-bottom:6px}
       Google 계정으로 로그인
     </button>
     <p style="margin-top:18px;font-size:11px;color:#9ca3af;line-height:1.9">
-      @flyingjp.com 계정만 접근 가능합니다<br>첫 로그인 시 계정이 자동 생성됩니다
+      @flyingjp.com 계정만 접근 가능합니다
     </p>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const FIREBASE_CONFIG = {
@@ -70,65 +84,121 @@ const db       = getFirestore(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ hd: COMPANY_DOMAIN });
 
-function showLoading(msg='이동 중...'){
-  document.getElementById('card').innerHTML = `
-    <div class="spinner"></div>
-    <div class="loading-text">${msg}</div>`;
-}
 function showErr(msg){
-  const el = document.getElementById('errMsg');
-  if(el){ el.textContent=msg; el.style.display='block'; }
+  const el=document.getElementById('errMsg');
+  if(el){el.textContent=msg;el.style.display='block';}
+}
+function showLoading(msg='잠시만요...'){
+  document.getElementById('root').innerHTML=`
+  <div class="card" style="text-align:center">
+    <div class="spinner"></div>
+    <div style="font-size:13px;color:#6b7280">${msg}</div>
+  </div>`;
 }
 
 onAuthStateChanged(auth, async fbUser => {
   if(!fbUser) return;
+
   const domain = fbUser.email?.split('@')[1];
   if(domain !== COMPANY_DOMAIN){
-    const { signOut } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
     await signOut(auth);
     showErr(`@${COMPANY_DOMAIN} 계정만 접근 가능합니다.`);
     return;
   }
+
   showLoading('계정 확인 중...');
 
-  // Firestore 프로필 확인/생성
   const ref  = doc(db, 'users', fbUser.uid);
   const snap = await getDoc(ref);
-  let role = 'user';
-  if(!snap.exists()){
-    await setDoc(ref, {
-      uid: fbUser.uid,
-      name: fbUser.displayName || '',
-      email: fbUser.email,
-      photoURL: fbUser.photoURL || null,
-      role: 'user',
-      dept: '',
-      totalLeave: 15,
-      usedLeave: 0,
-      createdAt: serverTimestamp()
-    });
-  } else {
-    role = snap.data().role || 'user';
-  }
 
-  // 역할에 따라 페이지 이동
-  if(ADMIN_EMAILS.includes(fbUser.email) || role === 'admin'){
-    location.href = 'admin.html';
-  } else if(role === 'approver1' || role === 'approver2'){
-    location.href = 'approve.html';
+  if(!snap.exists()){
+    // 첫 로그인 → 이름 설정 화면
+    showNameSetup(fbUser, ref);
   } else {
-    location.href = 'main.html';
+    const profile = snap.data();
+    // 이름이 없으면 이름 설정 화면
+    if(!profile.name || profile.name.trim()===''){
+      showNameSetup(fbUser, ref, profile);
+    } else {
+      redirect(fbUser.email, profile.role);
+    }
   }
 });
 
-document.getElementById('btnLogin').addEventListener('click', async () => {
-  const btn = document.getElementById('btnLogin');
-  btn.disabled = true;
-  try {
-    await signInWithPopup(auth, provider);
-  } catch(e) {
-    btn.disabled = false;
-    if(e.code !== 'auth/popup-closed-by-user') showErr('로그인 실패: ' + e.message);
+function showNameSetup(fbUser, ref, existing=null){
+  const googleName = fbUser.displayName || '';
+  document.getElementById('root').innerHTML = `
+  <div class="setup-card">
+    <div class="avatar-wrap">
+      ${fbUser.photoURL ? `<img src="${fbUser.photoURL}">` : googleName.slice(0,2).toUpperCase()||'FJ'}
+    </div>
+    <div class="setup-title">안녕하세요! 👋</div>
+    <div class="setup-sub">
+      처음 로그인하셨네요.<br>
+      휴가대장에서 사용할 <b>한국어 이름</b>을 입력해주세요.
+    </div>
+    <div class="fg">
+      <label class="fl">이름 (한국어)</label>
+      <input class="fi" id="nameInput" type="text" placeholder="예: 김민준" maxlength="10"
+        value="${googleName.includes('@')?'':googleName}">
+      <div class="hint">이름은 나중에 관리자 페이지에서 변경 가능합니다</div>
+    </div>
+    <div class="fg">
+      <label class="fl">부서 <span style="color:#9ca3af;font-weight:400">(선택)</span></label>
+      <input class="fi" id="deptInput" type="text" placeholder="예: 마케팅팀" maxlength="20"
+        value="${existing?.dept||''}">
+    </div>
+    <button class="btn-start" id="btnStart">
+      <i class="ti ti-arrow-right" style="font-size:18px"></i>시작하기
+    </button>
+  </div>`;
+
+  document.getElementById('nameInput').focus();
+
+  const start = async () => {
+    const name = document.getElementById('nameInput').value.trim();
+    const dept = document.getElementById('deptInput').value.trim();
+    if(!name){ document.getElementById('nameInput').style.borderColor='#dc2626'; return; }
+
+    const btn = document.getElementById('btnStart');
+    btn.disabled=true; btn.innerHTML='<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0"></div>';
+
+    if(existing){
+      await updateDoc(ref, {name, dept, updatedAt:serverTimestamp()});
+    } else {
+      await setDoc(ref, {
+        uid:fbUser.uid, name, email:fbUser.email,
+        photoURL:fbUser.photoURL||null,
+        role:'user', dept,
+        totalLeave:15, usedLeave:0,
+        createdAt:serverTimestamp()
+      });
+    }
+    redirect(fbUser.email, existing?.role||'user');
+  };
+
+  document.getElementById('btnStart').onclick = start;
+  document.getElementById('nameInput').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('deptInput').focus(); });
+  document.getElementById('deptInput').addEventListener('keydown', e=>{ if(e.key==='Enter') start(); });
+}
+
+function redirect(email, role){
+  if(ADMIN_EMAILS.includes(email) || role==='admin'){
+    location.href='admin.html';
+  } else if(role==='approver1'||role==='approver2'){
+    location.href='approve.html';
+  } else {
+    location.href='main.html';
+  }
+}
+
+document.getElementById('btnLogin')?.addEventListener('click', async () => {
+  const btn=document.getElementById('btnLogin');
+  btn.disabled=true;
+  try { await signInWithPopup(auth, provider); }
+  catch(e){
+    btn.disabled=false;
+    if(e.code!=='auth/popup-closed-by-user') showErr('로그인 실패: '+e.message);
   }
 });
 </script>

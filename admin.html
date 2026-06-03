@@ -100,6 +100,8 @@ textarea.fi{resize:vertical;min-height:70px}
       <div style="font-size:12px;font-weight:600;color:#111" id="nameEl"></div>
       <div style="font-size:10px;color:var(--gray)" id="roleEl"></div>
     </div>
+    <div id="navBtns" style="display:flex;gap:6px"></div>
+    <div style="width:1px;height:20px;background:var(--border);margin:0 2px"></div>
     <button class="btn btn-sm" id="btnOut"><i class="ti ti-logout"></i>로그아웃</button>
   </div>
 </div>
@@ -301,6 +303,15 @@ async function showAdminPage(){
   document.getElementById('btnOut').onclick = ()=>signOut(auth).then(()=>location.href='index.html');
 
   if(!allUsers.length) await fetchData();
+
+  // 네비 버튼
+  const nav = document.getElementById('navBtns');
+  if(nav){
+    nav.innerHTML = `
+      <a href="main.html" class="btn btn-sm"><i class="ti ti-calendar-event"></i>휴가신청</a>
+      <a href="approve.html" class="btn btn-sm"><i class="ti ti-clipboard-check"></i>승인관리</a>`;
+  }
+
   renderAdminPage();
 }
 

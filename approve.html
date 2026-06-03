@@ -73,6 +73,7 @@ textarea.fi{resize:vertical;min-height:70px}
     <div class="logo-mark">FJ</div>
     <span style="font-size:14px;font-weight:700;color:#111">플라잉재팬 휴가대장</span>
     <span style="font-size:11px;background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:20px;font-weight:600">승인 관리</span>
+    <div id="navBtns" style="display:flex;gap:6px;margin-left:8px"></div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
     <div class="avatar" id="avatarEl"></div>
@@ -80,6 +81,7 @@ textarea.fi{resize:vertical;min-height:70px}
       <div style="font-size:12px;font-weight:600;color:#111" id="nameEl"></div>
       <div style="font-size:10px;color:var(--gray)" id="roleEl"></div>
     </div>
+    <button class="btn btn-sm" id="btnEditName" title="이름 변경"><i class="ti ti-pencil"></i></button>
     <button class="btn btn-sm" id="btnOut"><i class="ti ti-logout"></i>로그아웃</button>
   </div>
 </div>
@@ -147,6 +149,15 @@ async function fetchData(){
 }
 
 function renderPage(){
+  // 네비 버튼
+  setTimeout(()=>{
+    const nav=document.getElementById('navBtns');
+    if(nav){
+      const btns=[`<a href="main.html" class="btn btn-sm"><i class="ti ti-calendar-event"></i>휴가신청</a>`];
+      if(me.role==='admin') btns.push(`<a href="admin.html" class="btn btn-sm"><i class="ti ti-settings"></i>관리자</a>`);
+      nav.innerHTML=btns.join('');
+    }
+  },0);
   const myPend1 = allLeaves.filter(l=>canA1(me.role)&&l.status==='pending');
   const myPend2 = allLeaves.filter(l=>canA2(me.role)&&l.status==='approved1');
   const done    = allLeaves.filter(l=>l.status==='approved'||l.status==='rejected');

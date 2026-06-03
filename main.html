@@ -91,13 +91,17 @@ tr.row-pending td:first-child{border-left:3px solid var(--warn)}
   <div class="topbar-l">
     <div class="logo-mark">FJ</div>
     <span style="font-size:14px;font-weight:700;color:#111">플라잉재팬 휴가대장</span>
+    <span style="font-size:11px;background:#e8f0fe;color:#1a56db;padding:2px 8px;border-radius:20px;font-weight:600">휴가 신청</span>
   </div>
   <div class="topbar-r">
-    <div class="avatar" id="avatarEl"></div>
+    <div id="navBtns" style="display:flex;gap:6px"></div>
+    <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
+    <div class="avatar" id="avatarEl" style="cursor:pointer" title="이름 변경" id="avatarEl"></div>
     <div style="min-width:0">
-      <div style="font-size:12px;font-weight:600;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px" id="nameEl"></div>
+      <div style="font-size:12px;font-weight:600;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px" id="nameEl"></div>
       <div style="font-size:10px;color:#6b7280" id="roleEl"></div>
     </div>
+    <button class="btn btn-sm" id="btnEditName" title="이름 변경"><i class="ti ti-pencil"></i></button>
     <button class="btn btn-sm" id="btnOut"><i class="ti ti-logout"></i>로그아웃</button>
   </div>
 </div>
@@ -207,6 +211,16 @@ function renderPage(){
     </div>
     ${leaveTable(myLeaves)}
   </div>`;
+  // 네비 버튼
+  const nav = document.getElementById('navBtns');
+  if(nav){
+    const btns = [];
+    if(me.role==='approver1'||me.role==='approver2'||me.role==='admin')
+      btns.push(`<a href="approve.html" class="btn btn-sm"><i class="ti ti-clipboard-check"></i>승인관리</a>`);
+    if(me.role==='admin')
+      btns.push(`<a href="admin.html" class="btn btn-sm"><i class="ti ti-settings"></i>관리자</a>`);
+    nav.innerHTML = btns.join('');
+  }
   bindPage();
 }
 
@@ -413,6 +427,40 @@ function closeModal(){document.getElementById('mW')?.remove();}
 document.getElementById('btnOut').addEventListener('click',()=>{
   signOut(auth).then(()=>location.href='index.html');
 });
+
+document.getElementById('btnEditName')?.addEventListener('click', openNameModal);
+document.getElementById('avatarEl')?.addEventListener('click', openNameModal);
+
+function openNameModal(){
+  showModal(`
+    <div class="modal-title"><i class="ti ti-pencil"></i>이름 변경</div>
+    <div class="fg">
+      <label class="fl">이름 (한국어)</label>
+      <input class="fi" id="newName" value="${dn(me)}" maxlength="10" placeholder="예: 김민준">
+    </div>
+    <div class="fg">
+      <label class="fl">부서</label>
+      <input class="fi" id="newDept" value="${me.dept||''}" maxlength="20" placeholder="예: 마케팅팀">
+    </div>
+    <div class="mf">
+      <button class="btn" id="mCn">취소</button>
+      <button class="btn btn-p" id="mSaveName"><i class="ti ti-check"></i>저장</button>
+    </div>
+  `);
+  document.getElementById('mCn').onclick = closeModal;
+  document.getElementById('newName').focus();
+  document.getElementById('mSaveName').onclick = async () => {
+    const name = document.getElementById('newName').value.trim();
+    const dept = document.getElementById('newDept').value.trim();
+    if(!name){ document.getElementById('newName').style.borderColor='var(--danger)'; return; }
+    await updateDoc(doc(db,'users',me.uid),{name,dept,updatedAt:serverTimestamp()});
+    me.name=name; me.dept=dept;
+    document.getElementById('nameEl').textContent = name;
+    document.getElementById('roleEl').textContent = `${ROLES[me.role]||'일반직원'}${dept?' · '+dept:''}`;
+    toast('이름이 변경되었습니다','ok');
+    closeModal();
+  };
+}
 </script>
 </body>
 </html>
