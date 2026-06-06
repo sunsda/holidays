@@ -436,6 +436,55 @@ function tabGrant(){
       <input class="fi" id="bulkReason" placeholder="부여 사유 (예: 2026년 연차)" style="width:200px;padding:7px 10px">
       <button class="btn btn-ok btn-sm" id="doBulk"><i class="ti ti-gift"></i>일괄 부여</button>
     </div>
+  </div>
+
+  <div class="card" style="background:#fffbeb;border-color:#fde68a">
+    <div class="ch">
+      <div class="ct" style="color:#92400e"><i class="ti ti-refresh" style="color:var(--warn)"></i>데이터 정리 도구</div>
+    </div>
+    <div style="font-size:13px;color:#78350f;margin-bottom:14px;line-height:1.8">
+      ⚠️ <b>usedLeave 재계산</b> — 실제 승인된 휴가 합산으로 사용일을 다시 계산합니다<br>
+      ⚠️ <b>개별 리셋</b> — 특정 직원의 총부여/사용일을 직접 수정합니다
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn btn-sm" id="doRecalcAll" style="background:#d97706;color:#fff;border-color:#d97706">
+        <i class="ti ti-refresh"></i>전체 사용일 재계산
+      </button>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>직원</th><th>현재 총부여</th><th>현재 사용</th><th>승인된 휴가 합산</th><th>총부여 수정</th><th>사용일 수정</th><th>적용</th></tr></thead>
+      <tbody>
+        ${allUsers.map(u=>{
+          const approvedDays = allLeaves
+            .filter(l=>l.userId===u.uid && (l.status==='approved'||l.status==='approved1'))
+            .reduce((sum,l)=>sum+(l.days||0),0);
+          const diff = (u.usedLeave||0) - approvedDays;
+          const diffColor = Math.abs(diff)<0.1?'var(--ok)':diff>0?'var(--danger)':'var(--warn)';
+          const diffText = Math.abs(diff)<0.1?'✓ 일치':`${diff>0?'+':''}${diff}일 차이`;
+          return `<tr>
+            <td><div style="font-weight:500">${dn(u)}</div><div style="font-size:11px;color:var(--gray)">${u.email}</div></td>
+            <td style="font-weight:600;color:var(--blue)">${u.totalLeave||0}일</td>
+            <td style="color:var(--warn)">${u.usedLeave||0}일</td>
+            <td>
+              <span style="font-weight:600;color:var(--ok)">${approvedDays}일</span>
+              <span style="font-size:11px;color:${diffColor};margin-left:6px">${diffText}</span>
+            </td>
+            <td><input type="number" class="leave-input" id="rt_${u.uid}" value="${u.totalLeave||0}" min="0" max="365" style="width:65px"></td>
+            <td><input type="number" class="leave-input" id="ru_${u.uid}" value="${u.usedLeave||0}" min="0" max="365" style="width:65px"></td>
+            <td style="white-space:nowrap">
+              <button class="btn btn-sm do-reset" data-uid="${u.uid}" data-name="${dn(u)}"
+                style="background:#6b7280;color:#fff;border-color:#6b7280;margin-right:4px">
+                <i class="ti ti-check"></i>적용
+              </button>
+              <button class="btn btn-sm do-recalc" data-uid="${u.uid}" data-name="${dn(u)}" data-days="${approvedDays}"
+                style="background:var(--warn);color:#fff;border-color:var(--warn)">
+                <i class="ti ti-refresh"></i>재계산
+              </button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>
   </div>`;
 }
 
@@ -580,6 +629,53 @@ function bindAdminPage(){
       await fetchData(); renderAdminPage();
     };
   });
+  // 개별 리셋 적용
+  document.querySelectorAll('.do-reset').forEach(btn=>{
+    btn.onclick=async()=>{
+      const uid=btn.dataset.uid, name=btn.dataset.name;
+      const newTotal=parseInt(document.getElementById(`rt_${uid}`)?.value)||0;
+      const newUsed =parseInt(document.getElementById(`ru_${uid}`)?.value)||0;
+      if(!confirm(`${name}님 데이터 수정\n총부여: ${newTotal}일 / 사용: ${newUsed}일 / 잔여: ${newTotal-newUsed}일\n적용할까요?`))return;
+      await updateDoc(doc(db,'users',uid),{totalLeave:newTotal, usedLeave:newUsed});
+      await addDoc(collection(db,'leaveHistory'),{
+        userId:uid, userName:name,
+        type:'reset',
+        days:0,
+        reason:`[관리자 직접 수정] 총부여:${newTotal}일 / 사용:${newUsed}일`,
+        before:0, after:newTotal,
+        byUid:me.uid, byName:dn(me),
+        createdAt:serverTimestamp()
+      });
+      toast(`${name}님 데이터 수정 완료`,'ok');
+      await fetchData(); renderAdminPage();
+    };
+  });
+
+  // 개별 사용일 재계산 (승인된 휴가 합산)
+  document.querySelectorAll('.do-recalc').forEach(btn=>{
+    btn.onclick=async()=>{
+      const uid=btn.dataset.uid, name=btn.dataset.name;
+      const approvedDays=parseFloat(btn.dataset.days)||0;
+      if(!confirm(`${name}님 사용일을 실제 승인된 휴가 합산(${approvedDays}일)으로 재계산할까요?`))return;
+      await updateDoc(doc(db,'users',uid),{usedLeave:approvedDays});
+      toast(`${name}님 사용일 → ${approvedDays}일 재계산 완료`,'ok');
+      await fetchData(); renderAdminPage();
+    };
+  });
+
+  // 전체 사용일 재계산
+  document.getElementById('doRecalcAll')?.addEventListener('click',async()=>{
+    if(!confirm(`전체 ${allUsers.length}명의 사용일을 실제 승인된 휴가 기준으로 재계산할까요?`))return;
+    await Promise.all(allUsers.map(u=>{
+      const approvedDays=allLeaves
+        .filter(l=>l.userId===u.uid&&(l.status==='approved'||l.status==='approved1'))
+        .reduce((sum,l)=>sum+(l.days||0),0);
+      return updateDoc(doc(db,'users',u.uid),{usedLeave:approvedDays});
+    }));
+    toast('전체 사용일 재계산 완료','ok');
+    await fetchData(); renderAdminPage();
+  });
+
   document.getElementById('doBulk')?.addEventListener('click',async()=>{
     const days=parseInt(document.getElementById('bulkDays').value)||0;
     const reason=document.getElementById('bulkReason')?.value.trim()||'일괄 부여';
