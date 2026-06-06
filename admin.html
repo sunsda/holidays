@@ -590,7 +590,7 @@ function bindAdminPage(){
       const newTotal=parseInt(document.getElementById(`set_${uid}`)?.value);
       const reason=document.getElementById(`setr_${uid}`)?.value.trim()||'관리자 직접 설정';
       if(isNaN(newTotal)||newTotal<0){toast('올바른 일수를 입력해주세요','err');return;}
-      if(!confirm(`${name}님의 총 부여일수를 ${cur}일 → ${newTotal}일로 설정할까요?\n사유: ${reason}`))return;
+      btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>처리 중...';
       await updateDoc(doc(db,'users',uid),{totalLeave:newTotal});
       await addDoc(collection(db,'leaveHistory'),{
         userId:uid, userName:name,
@@ -601,7 +601,7 @@ function bindAdminPage(){
         byUid:me.uid, byName:dn(me),
         createdAt:serverTimestamp()
       });
-      toast(`✓ ${name}님 총 부여일수 설정 완료\n${cur}일 → ${newTotal}일 (${reason})`,'ok');
+      toast(`✓ ${name}님 ${cur}일 → ${newTotal}일 설정 완료`,'ok');
       await fetchData(); renderAdminPage();
     };
   });
@@ -612,10 +612,10 @@ function bindAdminPage(){
       const days=parseInt(document.getElementById(`gd_${uid}`)?.value)||0;
       const reason=document.getElementById(`gr_${uid}`)?.value.trim()||'관리자 부여';
       if(days<1){toast('일수를 입력해주세요','err');return;}
+      btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>처리 중...';
       const u=allUsers.find(x=>x.uid===uid);
       const before=u?.totalLeave||0, after=before+days;
       await updateDoc(doc(db,'users',uid),{totalLeave:after});
-      // 이력 기록
       await addDoc(collection(db,'leaveHistory'),{
         userId:uid, userName:name,
         type:'grant', days, reason,
@@ -623,7 +623,7 @@ function bindAdminPage(){
         byUid:me.uid, byName:dn(me),
         createdAt:serverTimestamp()
       });
-      toast(`✓ ${name}님에게 ${days}일 부여 완료\n사유: ${reason}`,'ok');
+      toast(`✓ ${name}님 +${days}일 부여 완료`, 'ok');
       await fetchData(); renderAdminPage();
     };
   });
@@ -633,10 +633,10 @@ function bindAdminPage(){
       const days=parseInt(document.getElementById(`dd_${uid}`)?.value)||0;
       const reason=document.getElementById(`dr_${uid}`)?.value.trim()||'관리자 차감';
       if(days<1){toast('일수를 입력해주세요','err');return;}
+      btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>처리 중...';
       const u=allUsers.find(x=>x.uid===uid);
       const before=u?.totalLeave||0;
       const after=Math.max(0,before-days);
-      if(!confirm(`${name}님의 휴가를 ${days}일 차감할까요?\n${before}일 → ${after}일\n사유: ${reason}`))return;
       await updateDoc(doc(db,'users',uid),{totalLeave:after});
       await addDoc(collection(db,'leaveHistory'),{
         userId:uid, userName:name,
@@ -645,7 +645,7 @@ function bindAdminPage(){
         byUid:me.uid, byName:dn(me),
         createdAt:serverTimestamp()
       });
-      toast(`✓ ${name}님 ${days}일 차감 완료\n${before}일 → ${after}일`,'ok');
+      toast(`✓ ${name}님 −${days}일 차감 완료 (${before}→${after}일)`,'ok');
       await fetchData(); renderAdminPage();
     };
   });
@@ -694,7 +694,7 @@ function bindAdminPage(){
     const days=parseInt(document.getElementById('bulkDays').value)||0;
     const reason=document.getElementById('bulkReason')?.value.trim()||'일괄 부여';
     if(days<1){toast('일수를 입력해주세요','err');return;}
-    if(!confirm(`전체 ${allUsers.length}명에게 ${days}일씩 부여할까요?\n사유: ${reason}`))return;
+
     await Promise.all(allUsers.map(u=>{
       const before=u.totalLeave||0, after=before+days;
       return Promise.all([
