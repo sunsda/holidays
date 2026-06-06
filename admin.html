@@ -136,8 +136,8 @@ provider.setCustomParameters({ hd: COMPANY_DOMAIN });
 
 const ROLES    = {admin:'최고관리자',approver2:'2차승인자(임원)',approver1:'1차승인자',user:'일반직원'};
 const ROLE_CLS = {admin:'badge-admin',approver2:'badge-a2',approver1:'badge-a1',user:'badge-user'};
-const SLB      = {pending:'기안완료',approved1:'1차승인',approved:'최종승인',rejected:'반려'};
-const SCLS     = {pending:'s-pending',approved1:'s-a1',approved:'s-ok',rejected:'s-reject'};
+const SLB      = {pending:'기안완료',approved:'승인완료',rejected:'반려'};
+const SCLS     = {pending:'s-pending',approved:'s-ok',rejected:'s-reject'};
 
 let me        = null;
 let allUsers  = [];
@@ -148,8 +148,7 @@ const rem  = u => (u.totalLeave||0)-(u.usedLeave||0);
 const fmt  = d => d?d.replace(/-/g,'.'):'-';
 const dn   = u => u.name||u.email?.split('@')[0]||'';
 const ini  = u => dn(u).slice(0,2).toUpperCase();
-const canA1 = r => r==='approver1'||r==='admin';
-const canA2 = r => r==='approver2'||r==='admin';
+const canApprove = r => r==='approver1'||r==='approver2'||r==='admin';
 
 function toast(msg,t=''){
   document.querySelectorAll('.toast').forEach(e=>e.remove());
@@ -316,7 +315,7 @@ async function showAdminPage(){
 }
 
 function renderAdminPage(){
-  const pendCnt = allLeaves.filter(l=>l.status==='pending'||l.status==='approved1').length;
+  const pendCnt = allLeaves.filter(l=>l.status==='pending').length;
   document.getElementById('root').innerHTML = `
   <div class="wrap">
     <div class="ph">
@@ -435,21 +434,14 @@ function tabLeaves(){
 // ── 탭: 승인 처리 ─────────────────────────────────────
 function tabApprove(){
   const s1=allLeaves.filter(l=>l.status==='pending');
-  const s2=allLeaves.filter(l=>l.status==='approved1');
-  if(!s1.length&&!s2.length) return `<div class="card"><div class="empty"><i class="ti ti-check"></i><p>처리할 항목이 없습니다</p></div></div>`;
+  if(!s1.length) return `<div class="card"><div class="empty"><i class="ti ti-check"></i><p>처리할 항목이 없습니다</p></div></div>`;
   return `
-  ${s1.length?`<div class="card" style="margin-bottom:14px">
-    <div class="ch"><div class="ct"><i class="ti ti-clipboard-check"></i>1차 승인 대기
+  <div class="card">
+    <div class="ch"><div class="ct"><i class="ti ti-clipboard-check"></i>승인 대기
       <span style="background:#f3f4f6;color:var(--gray);font-size:11px;padding:2px 8px;border-radius:20px">${s1.length}건</span>
     </div></div>
     ${leaveTable(s1,true,1)}
-  </div>`:''}
-  ${s2.length?`<div class="card">
-    <div class="ch"><div class="ct"><i class="ti ti-checks"></i>최종 승인 대기
-      <span style="background:#f3f4f6;color:var(--gray);font-size:11px;padding:2px 8px;border-radius:20px">${s2.length}건</span>
-    </div></div>
-    ${leaveTable(s2,true,2)}
-  </div>`:''}`;
+  </div>`;
 }
 
 function leaveTable(leaves,showActions,step){
@@ -464,17 +456,18 @@ function leaveTable(leaves,showActions,step){
         <td style="font-weight:600;color:var(--blue)">${l.days}일</td>
         <td><div class="ellipsis" title="${l.reason}">${l.reason}</div>
           ${l.rejectedReason?`<div style="font-size:11px;color:var(--danger)">반려: ${l.rejectedReason}</div>`:''}</td>
-        <td><div style="display:flex;align-items:center;gap:2px">
-          <span class="step-dot done">기안</span>
-          <span class="step-line ${(l.status==='approved1'||l.status==='approved')?'done':''}"></span>
-          <span class="step-dot ${l.status==='rejected'?'rej':(l.status==='approved1'||l.status==='approved')?'done':''}">1차</span>
-          <span class="step-line ${l.status==='approved'?'done':''}"></span>
-          <span class="step-dot ${l.status==='approved'?'done':''}">최종</span>
-        </div></td>
+        <td>
+          <div style="display:flex;align-items:center;gap:2px">
+            <span class="step-dot done">기안</span>
+            <span class="step-line ${l.status==='approved'?'done':''}"></span>
+            <span class="step-dot ${l.status==='rejected'?'rej':l.status==='approved'?'done':''}">승인</span>
+          </div>
+          ${l.status==='approved'&&l.approver1Name?`<div style="font-size:10px;color:var(--gray);margin-top:2px">by ${l.approver1Name}</div>`:''}
+        </td>
         <td><span class="status-badge ${SCLS[l.status]||''}"><span class="sdot"></span>${SLB[l.status]||l.status}</span></td>
         ${showActions?`<td style="white-space:nowrap">
           <button class="btn btn-ok btn-sm abtn" data-id="${l.id}" data-step="${step}" style="margin-bottom:3px">
-            <i class="ti ti-check"></i>${step===1?'1차승인':'최종승인'}
+            <i class="ti ti-check"></i>승인
           </button><br>
           <button class="btn btn-ng btn-sm rbtn" data-id="${l.id}"><i class="ti ti-x"></i>반려</button>
         </td>`:''}

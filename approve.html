@@ -108,9 +108,9 @@ const app  = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-const ROLES = {admin:'최고관리자',approver2:'2차승인자',approver1:'1차승인자',user:'일반직원'};
-const SLB   = {pending:'기안완료',approved1:'1차승인',approved:'최종승인',rejected:'반려'};
-const SCLS  = {pending:'s-pending',approved1:'s-a1',approved:'s-ok',rejected:'s-reject'};
+const ROLES = {admin:'최고관리자',approver2:'승인자(임원)',approver1:'승인자',user:'일반직원'};
+const SLB   = {pending:'기안완료',approved:'승인완료',rejected:'반려'};
+const SCLS  = {pending:'s-pending',approved:'s-ok',rejected:'s-reject'};
 
 let me        = null;
 let allLeaves = [];
@@ -118,8 +118,7 @@ let curTab    = 'pending';
 
 const fmt  = d => d?d.replace(/-/g,'.'):'-';
 const dn   = u => u.name||u.email?.split('@')[0]||'';
-const canA1 = r => r==='approver1'||r==='admin';
-const canA2 = r => r==='approver2'||r==='admin';
+const canApprove = r => r==='approver1'||r==='approver2'||r==='admin';
 
 function toast(msg,t=''){
   document.querySelectorAll('.toast').forEach(e=>e.remove());
@@ -133,7 +132,7 @@ onAuthStateChanged(auth, async fbUser => {
   const snap = await getDoc(doc(db,'users',fbUser.uid));
   if(!snap.exists()){location.href='index.html';return;}
   me = {uid:fbUser.uid,photoURL:fbUser.photoURL||null,...snap.data()};
-  if(me.role==='user'){location.href='main.html';return;}
+  if(!canApprove(me.role)){location.href='main.html';return;}
 
   const av = document.getElementById('avatarEl');
   av.innerHTML = me.photoURL?`<img src="${me.photoURL}">`:dn(me).slice(0,2).toUpperCase();
@@ -161,7 +160,7 @@ function renderPage(){
   const myPend1 = allLeaves.filter(l=>canA1(me.role)&&l.status==='pending');
   const myPend2 = allLeaves.filter(l=>canA2(me.role)&&l.status==='approved1');
   const done    = allLeaves.filter(l=>l.status==='approved'||l.status==='rejected');
-  const pendCnt = (canA1(me.role)?myPend1.length:0)+(canA2(me.role)?myPend2.length:0);
+  const pendCnt = myPend1.length;
 
   document.getElementById('wrap').innerHTML = `
   <div class="ph">
@@ -241,30 +240,26 @@ function bindPage(){
     b.onclick=()=>{curTab=b.dataset.tab;renderPage();};
   });
   document.querySelectorAll('.abtn').forEach(b=>{
-    b.onclick=()=>approveLeave(b.dataset.id,parseInt(b.dataset.step));
+    b.onclick=()=>approveLeave(b.dataset.id);
   });
   document.querySelectorAll('.rbtn').forEach(b=>{
     b.onclick=()=>openRejectModal(b.dataset.id);
   });
 }
 
-async function approveLeave(id,step){
+async function approveLeave(id){
   const l=allLeaves.find(x=>x.id===id);if(!l)return;
-  if(step===1){
-    await updateDoc(doc(db,'leaves',id),{status:'approved1',updatedAt:serverTimestamp()});
-    toast('1차 승인 완료','ok');
-  } else {
-    // 캘린더 등록
-    const calEventId = await addToCalendar(l);
-    await updateDoc(doc(db,'leaves',id),{
-      status:'approved',
-      calEventId: calEventId||'',
-      updatedAt:serverTimestamp()
-    });
-    const uSnap=await getDoc(doc(db,'users',l.userId));
-    if(uSnap.exists()){const ud=uSnap.data();await updateDoc(doc(db,'users',l.userId),{usedLeave:(ud.usedLeave||0)+l.days});}
-    toast('최종 승인 완료 🎉 캘린더에 등록되었습니다','ok');
-  }
+  const calEventId = await addToCalendar(l);
+  await updateDoc(doc(db,'leaves',id),{
+    status:'approved',
+    calEventId: calEventId||'',
+    approver1Id: me.uid,
+    approver1Name: dn(me),
+    updatedAt:serverTimestamp()
+  });
+  const uSnap=await getDoc(doc(db,'users',l.userId));
+  if(uSnap.exists()){const ud=uSnap.data();await updateDoc(doc(db,'users',l.userId),{usedLeave:(ud.usedLeave||0)+l.days});}
+  toast('승인 완료 🎉 캘린더에 등록되었습니다','ok');
   await fetchData();
 }
 

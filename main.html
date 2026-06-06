@@ -241,11 +241,10 @@ function leaveTable(leaves){
         <td>
           <div style="display:flex;align-items:center;gap:2px">
             <span class="step-dot done">기안</span>
-            <span class="step-line ${(l.status==='approved1'||l.status==='approved')&&l.status!=='rejected'?'done':''}"></span>
-            <span class="step-dot ${l.status==='rejected'?'rej':l.status==='approved1'||l.status==='approved'?'done':''}">1차</span>
-            <span class="step-line ${l.status==='approved'?'done':''}"></span>
-            <span class="step-dot ${l.status==='approved'?'done':''}">최종</span>
+            <span class="step-line ${l.status==='approved'||l.status==='rejected'?'done':''}"></span>
+            <span class="step-dot ${l.status==='rejected'?'rej':l.status==='approved'?'done':''}">승인</span>
           </div>
+          ${l.status==='approved'&&l.approver1Name?`<div style="font-size:10px;color:var(--gray);margin-top:2px">by ${l.approver1Name}</div>`:''}
         </td>
         <td><span class="status-badge ${SCLS[l.status]||''}"><span class="sdot"></span>${SLB[l.status]||l.status}</span></td>
         <td style="white-space:nowrap">
@@ -303,9 +302,8 @@ function bindPage(){
 
 // ── 신청/수정/재신청 모달 (하나로 통합) ──────────────────
 function openLeaveModal(existing, isReapply){
-  const a1s = allUsers.filter(u=>u.role==='approver1'||u.role==='admin');
-  const a2s = allUsers.filter(u=>u.role==='approver2'||u.role==='admin');
-  if(!a1s.length||!a2s.length){
+  const a1s = allUsers.filter(u=>u.role==='approver1'||u.role==='approver2'||u.role==='admin');
+  if(!a1s.length){
     toast('승인자가 지정되지 않았습니다. 관리자에게 문의하세요.','err'); return;
   }
 
@@ -328,9 +326,7 @@ function openLeaveModal(existing, isReapply){
     <div class="steps-row">
       <div class="st active"><div class="sc">1</div><div class="sl2">기안</div></div>
       <div class="st-line"></div>
-      <div class="st"><div class="sc">2</div><div class="sl2">1차승인</div></div>
-      <div class="st-line"></div>
-      <div class="st"><div class="sc">3</div><div class="sl2">최종승인</div></div>
+      <div class="st"><div class="sc">2</div><div class="sl2">승인</div></div>
     </div>
     ${isReapply?`<div class="warn-box"><i class="ti ti-info-circle"></i> 반려된 신청을 기반으로 재신청합니다. 사유를 다시 작성해주세요.</div>`:''}
     <div class="info-box">잔여 휴가: <b>${curRemain}일</b>${isEdit?' (수정 전 일수 포함)':''}</div>
@@ -342,10 +338,8 @@ function openLeaveModal(existing, isReapply){
     </div>
     <div class="fg"><label class="fl">사유</label>
       <textarea class="fi" id="mR" rows="3" placeholder="휴가 사유를 입력해주세요">${defReason}</textarea></div>
-    <div class="fg"><label class="fl">1차 승인자</label>
+    <div class="fg"><label class="fl">승인자</label>
       <select class="fi" id="mA1">${a1s.map(u=>`<option value="${u.uid}" ${u.uid===defA1?'selected':''}>${dn(u)} (${u.dept||ROLES[u.role]})</option>`).join('')}</select></div>
-    <div class="fg"><label class="fl">2차 승인자</label>
-      <select class="fi" id="mA2">${a2s.map(u=>`<option value="${u.uid}" ${u.uid===defA2?'selected':''}>${dn(u)} (${u.dept||ROLES[u.role]})</option>`).join('')}</select></div>
     <div class="mf">
       <button class="btn" id="mCn">취소</button>
       <button class="btn btn-p" id="mSb"><i class="ti ${isEdit?'ti-check':'ti-send'}"></i>${btnLabel}</button>
@@ -371,7 +365,7 @@ function openLeaveModal(existing, isReapply){
       await updateDoc(doc(db,'leaves',existing.id),{
         type, startDate:s, endDate:e, days, reason,
         approver1Id:a1id, approver1Name:dn(a1u)||'',
-        approver2Id:a2id, approver2Name:dn(a2u)||'',
+        approver2Id:a1id, approver2Name:dn(a1u)||'',
         status:'pending', rejectedReason:'',
         updatedAt:serverTimestamp()
       });
@@ -383,7 +377,7 @@ function openLeaveModal(existing, isReapply){
         type, startDate:s, endDate:e, days, reason,
         status:'pending',
         approver1Id:a1id, approver1Name:dn(a1u)||'',
-        approver2Id:a2id, approver2Name:dn(a2u)||'',
+        approver2Id:a1id, approver2Name:dn(a1u)||'',
         rejectedReason:'',
         createdAt:serverTimestamp(), updatedAt:serverTimestamp()
       });
