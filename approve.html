@@ -109,8 +109,8 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 
 const ROLES = {admin:'최고관리자',approver2:'승인자(임원)',approver1:'승인자',user:'일반직원'};
-const SLB   = {pending:'기안완료',approved:'승인완료',rejected:'반려'};
-const SCLS  = {pending:'s-pending',approved:'s-ok',rejected:'s-reject'};
+const SLB   = {pending:'기안완료',approved1:'승인완료',approved:'승인완료',rejected:'반려'};
+const SCLS  = {pending:'s-pending',approved1:'s-ok',approved:'s-ok',rejected:'s-reject'};
 
 let me        = null;
 let allLeaves = [];
@@ -159,7 +159,7 @@ function renderPage(){
   },0);
   const myPend1 = allLeaves.filter(l=>canA1(me.role)&&l.status==='pending');
   const myPend2 = allLeaves.filter(l=>canA2(me.role)&&l.status==='approved1');
-  const done    = allLeaves.filter(l=>l.status==='approved'||l.status==='rejected');
+  const done    = allLeaves.filter(l=>l.status==='approved'||l.status==='approved1'||l.status==='rejected');
   const pendCnt = myPend1.length;
 
   document.getElementById('wrap').innerHTML = `

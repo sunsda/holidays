@@ -136,8 +136,8 @@ provider.setCustomParameters({ hd: COMPANY_DOMAIN });
 
 const ROLES    = {admin:'최고관리자',approver2:'2차승인자(임원)',approver1:'1차승인자',user:'일반직원'};
 const ROLE_CLS = {admin:'badge-admin',approver2:'badge-a2',approver1:'badge-a1',user:'badge-user'};
-const SLB      = {pending:'기안완료',approved:'승인완료',rejected:'반려'};
-const SCLS     = {pending:'s-pending',approved:'s-ok',rejected:'s-reject'};
+const SLB      = {pending:'기안완료',approved1:'승인완료',approved:'승인완료',rejected:'반려'};
+const SCLS     = {pending:'s-pending',approved1:'s-ok',approved:'s-ok',rejected:'s-reject'};
 
 let me        = null;
 let allUsers  = [];
@@ -459,10 +459,10 @@ function leaveTable(leaves,showActions,step){
         <td>
           <div style="display:flex;align-items:center;gap:2px">
             <span class="step-dot done">기안</span>
-            <span class="step-line ${l.status==='approved'?'done':''}"></span>
-            <span class="step-dot ${l.status==='rejected'?'rej':l.status==='approved'?'done':''}">승인</span>
+            <span class="step-line ${(l.status==='approved'||l.status==='approved1')?'done':''}"></span>
+            <span class="step-dot ${l.status==='rejected'?'rej':(l.status==='approved'||l.status==='approved1')?'done':''}">승인</span>
           </div>
-          ${l.status==='approved'&&l.approver1Name?`<div style="font-size:10px;color:var(--gray);margin-top:2px">by ${l.approver1Name}</div>`:''}
+          ${(l.status==='approved'||l.status==='approved1')&&l.approver1Name?`<div style="font-size:10px;color:var(--gray);margin-top:2px">by ${l.approver1Name}</div>`:''}
         </td>
         <td><span class="status-badge ${SCLS[l.status]||''}"><span class="sdot"></span>${SLB[l.status]||l.status}</span></td>
         ${showActions?`<td style="white-space:nowrap">

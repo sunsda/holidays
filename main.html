@@ -131,8 +131,8 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 
 const ROLES = {admin:'최고관리자',approver2:'2차승인자',approver1:'1차승인자',user:'일반직원'};
-const SLB   = {pending:'기안완료',approved1:'1차승인',approved:'최종승인',rejected:'반려'};
-const SCLS  = {pending:'s-pending',approved1:'s-a1',approved:'s-ok',rejected:'s-reject'};
+const SLB   = {pending:'기안완료',approved1:'승인완료',approved:'승인완료',rejected:'반려'};
+const SCLS  = {pending:'s-pending',approved1:'s-ok',approved:'s-ok',rejected:'s-reject'};
 const LTYPES= ['연차','반차(오전)','반차(오후)','병가','특별휴가','경조사'];
 
 let me       = null;
@@ -199,7 +199,7 @@ function renderPage(){
     </div>
     <div class="stat-card">
       <div class="sl"><i class="ti ti-clock"></i>진행중</div>
-      <div class="sv" style="color:var(--warn)">${myLeaves.filter(l=>l.status==='pending'||l.status==='approved1').length}건</div>
+      <div class="sv" style="color:var(--warn)">${myLeaves.filter(l=>l.status==='pending').length}건</div>
       <div class="ss">승인 대기중인 신청</div>
     </div>
   </div>
@@ -241,10 +241,10 @@ function leaveTable(leaves){
         <td>
           <div style="display:flex;align-items:center;gap:2px">
             <span class="step-dot done">기안</span>
-            <span class="step-line ${l.status==='approved'||l.status==='rejected'?'done':''}"></span>
-            <span class="step-dot ${l.status==='rejected'?'rej':l.status==='approved'?'done':''}">승인</span>
+            <span class="step-line ${(l.status==='approved'||l.status==='approved1')&&l.status!=='rejected'?'done':''}"></span>
+            <span class="step-dot ${l.status==='rejected'?'rej':(l.status==='approved'||l.status==='approved1')?'done':''}">승인</span>
           </div>
-          ${l.status==='approved'&&l.approver1Name?`<div style="font-size:10px;color:var(--gray);margin-top:2px">by ${l.approver1Name}</div>`:''}
+          ${(l.status==='approved'||l.status==='approved1')&&l.approver1Name?`<div style="font-size:10px;color:var(--gray);margin-top:2px">by ${l.approver1Name}</div>`:''}
         </td>
         <td><span class="status-badge ${SCLS[l.status]||''}"><span class="sdot"></span>${SLB[l.status]||l.status}</span></td>
         <td style="white-space:nowrap">
@@ -255,8 +255,6 @@ function leaveTable(leaves){
             </div>
           ` : l.status==='rejected' ? `
             <button class="btn btn-sm btn-p reapply-btn" data-id="${l.id}"><i class="ti ti-refresh"></i>재신청</button>
-          ` : l.status==='approved1' ? `
-            <span style="font-size:11px;color:var(--blue)">1차승인 완료<br>최종 대기중</span>
           ` : `
             <span style="font-size:11px;color:var(--ok)">✓ 처리완료</span>
           `}
