@@ -143,7 +143,45 @@ const rem   = u => (u.totalLeave||0)-(u.usedLeave||0);
 const fmt   = d => d?d.replace(/-/g,'.'):'-';
 const dn    = u => u.name||u.email?.split('@')[0]||'';
 const today = () => new Date().toISOString().slice(0,10);
-const calcDays = (type,s,e) => type.includes('반차')?0.5:Math.max(1,Math.round((new Date(e)-new Date(s))/864e5)+1);
+// 일본 공휴일 (2025-2027)
+const JP_HOLIDAYS = new Set([
+  // 2025
+  '2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24',
+  '2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-05-06',
+  '2025-07-21','2025-08-11','2025-09-15','2025-09-23','2025-10-13',
+  '2025-11-03','2025-11-23','2025-11-24',
+  // 2026
+  '2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20',
+  '2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06',
+  '2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23',
+  '2026-10-12','2026-11-03','2026-11-23','2026-12-23',
+  // 2027
+  '2027-01-01','2027-01-11','2027-02-11','2027-02-23','2027-03-21',
+  '2027-04-29','2027-05-03','2027-05-04','2027-05-05',
+  '2027-07-19','2027-08-11','2027-09-20','2027-09-23','2027-10-11',
+  '2027-11-03','2027-11-23',
+]);
+
+function isWorkday(dateStr){
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay();
+  if(day===0||day===6) return false; // 토일 제외
+  if(JP_HOLIDAYS.has(dateStr)) return false; // 일본 공휴일 제외
+  return true;
+}
+
+function calcWorkdays(startStr, endStr){
+  let count = 0;
+  const start = new Date(startStr + 'T00:00:00');
+  const end   = new Date(endStr   + 'T00:00:00');
+  for(let d = new Date(start); d <= end; d.setDate(d.getDate()+1)){
+    const ds = d.toISOString().slice(0,10);
+    if(isWorkday(ds)) count++;
+  }
+  return count;
+}
+
+const calcDays = (type,s,e) => type.includes('반차') ? 0.5 : Math.max(0, calcWorkdays(s,e));
 
 function toast(msg,t=''){
   document.querySelectorAll('.toast').forEach(e=>e.remove());
@@ -300,10 +338,7 @@ function bindPage(){
 
 // ── 신청/수정/재신청 모달 (하나로 통합) ──────────────────
 function openLeaveModal(existing, isReapply){
-  const a1s = allUsers.filter(u=>u.role==='approver1'||u.role==='approver2'||u.role==='admin');
-  if(!a1s.length){
-    toast('승인자가 지정되지 않았습니다. 관리자에게 문의하세요.','err'); return;
-  }
+
 
   const isEdit   = existing && !isReapply;
   const title    = isEdit ? '휴가 신청 수정' : isReapply ? '휴가 재신청' : '휴가 신청';
@@ -316,8 +351,7 @@ function openLeaveModal(existing, isReapply){
   const defStart = existing?.startDate || today();
   const defEnd   = existing?.endDate   || today();
   const defReason= isReapply ? '' : (existing?.reason || '');
-  const defA1    = existing?.approver1Id || a1s[0]?.uid || '';
-  const defA2    = existing?.approver2Id || '';
+
 
   showModal(`
     <div class="modal-title"><i class="ti ${titleIcon}"></i>${title}</div>
@@ -327,7 +361,7 @@ function openLeaveModal(existing, isReapply){
       <div class="st"><div class="sc">2</div><div class="sl2">승인</div></div>
     </div>
     ${isReapply?`<div class="warn-box"><i class="ti ti-info-circle"></i> 반려된 신청을 기반으로 재신청합니다. 사유를 다시 작성해주세요.</div>`:''}
-    <div class="info-box">잔여 휴가: <b>${curRemain}일</b>${isEdit?' (수정 전 일수 포함)':''}</div>
+    <div class="info-box" id="leaveInfo">잔여 휴가: <b>${curRemain}일</b>${isEdit?' (수정 전 일수 포함)':''}</div>
     <div class="fg"><label class="fl">휴가 종류</label>
       <select class="fi" id="mT">${LTYPES.map(t=>`<option ${t===defType?'selected':''}>${t}</option>`).join('')}</select></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -336,8 +370,7 @@ function openLeaveModal(existing, isReapply){
     </div>
     <div class="fg"><label class="fl">사유</label>
       <textarea class="fi" id="mR" rows="3" placeholder="휴가 사유를 입력해주세요">${defReason}</textarea></div>
-    <div class="fg"><label class="fl">승인자</label>
-      <select class="fi" id="mA1">${a1s.map(u=>`<option value="${u.uid}" ${u.uid===defA1?'selected':''}>${dn(u)} (${u.dept||ROLES[u.role]})</option>`).join('')}</select></div>
+
     <div class="mf">
       <button class="btn" id="mCn">취소</button>
       <button class="btn btn-p" id="mSb"><i class="ti ${isEdit?'ti-check':'ti-send'}"></i>${btnLabel}</button>
@@ -345,6 +378,24 @@ function openLeaveModal(existing, isReapply){
   `);
 
   document.getElementById('mCn').onclick = closeModal;
+
+  // 날짜/종류 변경 시 영업일 실시간 계산
+  function updateDayCount(){
+    const type  = document.getElementById('mT').value;
+    const s     = document.getElementById('mS').value;
+    const e     = document.getElementById('mE').value;
+    if(!s||!e) return;
+    const days  = calcDays(type,s,e);
+    const box   = document.getElementById('leaveInfo');
+    const color = days > curRemain ? 'var(--danger)' : 'var(--blue)';
+    const warn  = days > curRemain ? ' ⚠️ 잔여 부족!' : '';
+    if(box) box.innerHTML = `잔여 휴가: <b>${curRemain}일</b> &nbsp;|&nbsp; 신청: <b style="color:${color}">${days}일 (영업일)</b>${warn}`;
+  }
+  ['mT','mS','mE'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('change', updateDayCount);
+  });
+  updateDayCount();
+
   document.getElementById('mSb').onclick = async () => {
     const type  = document.getElementById('mT').value;
     const s     = document.getElementById('mS').value;
@@ -404,6 +455,28 @@ function openCancelModal(leave){
     toast('휴가 신청이 취소되었습니다','ok');
     closeModal(); await fetchData();
   };
+}
+
+async function sendLeaveNotify(leaveData) {
+  if(!APPS_SCRIPT_URL) return;
+  try {
+    const params = new URLSearchParams({
+      secret:    CAL_SECRET,
+      action:    'notify',
+      userName:  leaveData.userName  || '',
+      userEmail: leaveData.userEmail || '',
+      type:      leaveData.type,
+      startDate: leaveData.startDate,
+      endDate:   leaveData.endDate,
+      days:      String(leaveData.days),
+      reason:    leaveData.reason,
+    });
+    const res = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {redirect:'follow'});
+    const data = await res.json();
+    console.log('이메일 알림:', data);
+  } catch(err) {
+    console.warn('이메일 알림 오류:', err);
+  }
 }
 
 function showModal(html, extraClass=''){
