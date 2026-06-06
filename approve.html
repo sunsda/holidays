@@ -30,13 +30,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f0f4f8;color:#111827;font
 .btn-ok{background:var(--ok);color:#fff;border-color:var(--ok)}.btn-ok:hover{background:#047857}
 .btn-ng{background:var(--danger);color:#fff;border-color:var(--danger)}.btn-ng:hover{background:#b91c1c}
 .btn-sm{padding:5px 10px;font-size:12px}
-.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
-.badge-admin{background:#fef3c7;color:#92400e}.badge-a2{background:#fee2e2;color:#991b1b}
-.badge-a1{background:#dbeafe;color:#1e40af}.badge-user{background:#f3f4f6;color:#374151}
 .status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
 .sdot{width:5px;height:5px;border-radius:50%;background:currentColor}
-.s-pending{background:#fef3c7;color:#92400e}.s-a1{background:#dbeafe;color:#1e40af}
-.s-ok{background:#d1fae5;color:#065f46}.s-reject{background:#fee2e2;color:#991b1b}
+.s-pending{background:#fef3c7;color:#92400e}
+.s-ok{background:#d1fae5;color:#065f46}
+.s-reject{background:#fee2e2;color:#991b1b}
 .type-tag{display:inline-block;padding:2px 7px;background:#f3f4f6;border-radius:4px;font-size:11px;font-weight:500}
 .step-dot{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:#f3f4f6;color:var(--gray)}
 .step-dot.done{background:var(--blue-l);color:var(--blue)}.step-dot.rej{background:#fee2e2;color:var(--danger)}
@@ -104,11 +102,51 @@ const FIREBASE_CONFIG = {
   appId:"1:973822019022:web:fd5473aadf14061539979f"
 };
 
+// ── 구글 캘린더 연동 ──────────────────────────────────
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyG-QckSNEIzAOJihgu-iAv93wj74jrKI3nsa1i69U6MICLyM9WeGKudPu6_8h8CdzP/exec';
+const CAL_SECRET      = 'FLYINGJP_CAL_2024';
+
+async function addToCalendar(leave) {
+  if(!APPS_SCRIPT_URL) return null;
+  try {
+    const params = new URLSearchParams({
+      secret:    CAL_SECRET,
+      action:    'add',
+      userName:  leave.userName  || '',
+      userEmail: leave.userEmail || '',
+      type:      leave.type,
+      startDate: leave.startDate,
+      endDate:   leave.endDate,
+      days:      String(leave.days),
+      reason:    leave.reason,
+    });
+    const res  = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {redirect:'follow'});
+    const text = await res.text();
+    const data = JSON.parse(text);
+    console.log('캘린더 응답:', data);
+    if(data.success) return data.eventId;
+    console.warn('캘린더 등록 실패:', data.error);
+    return null;
+  } catch(err) {
+    console.warn('캘린더 연동 오류:', err);
+    return null;
+  }
+}
+
+async function removeFromCalendar(eventId) {
+  if(!eventId) return;
+  try {
+    const params = new URLSearchParams({secret:CAL_SECRET, action:'remove', eventId});
+    await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {redirect:'follow'});
+  } catch(err) { console.warn('캘린더 삭제 오류:', err); }
+}
+
 const app  = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
 const ROLES = {admin:'최고관리자',approver2:'승인자(임원)',approver1:'승인자',user:'일반직원'};
+// approved1 포함해서 모두 승인완료로 표시
 const SLB   = {pending:'기안완료',approved1:'승인완료',approved:'승인완료',rejected:'반려'};
 const SCLS  = {pending:'s-pending',approved1:'s-ok',approved:'s-ok',rejected:'s-reject'};
 
@@ -116,8 +154,8 @@ let me        = null;
 let allLeaves = [];
 let curTab    = 'pending';
 
-const fmt  = d => d?d.replace(/-/g,'.'):'-';
-const dn   = u => u.name||u.email?.split('@')[0]||'';
+const fmt        = d => d?d.replace(/-/g,'.'):'-';
+const dn         = u => u.name||u.email?.split('@')[0]||'';
 const canApprove = r => r==='approver1'||r==='approver2'||r==='admin';
 
 function toast(msg,t=''){
@@ -138,6 +176,15 @@ onAuthStateChanged(auth, async fbUser => {
   av.innerHTML = me.photoURL?`<img src="${me.photoURL}">`:dn(me).slice(0,2).toUpperCase();
   document.getElementById('nameEl').textContent = dn(me);
   document.getElementById('roleEl').textContent = ROLES[me.role]||'';
+
+  // 네비 버튼
+  const nav = document.getElementById('navBtns');
+  if(nav){
+    const btns=[`<a href="main.html" class="btn btn-sm"><i class="ti ti-calendar-event"></i>휴가신청</a>`];
+    if(me.role==='admin') btns.push(`<a href="admin.html" class="btn btn-sm"><i class="ti ti-settings"></i>관리자</a>`);
+    nav.innerHTML=btns.join('');
+  }
+
   await fetchData();
 });
 
@@ -148,19 +195,11 @@ async function fetchData(){
 }
 
 function renderPage(){
-  // 네비 버튼
-  setTimeout(()=>{
-    const nav=document.getElementById('navBtns');
-    if(nav){
-      const btns=[`<a href="main.html" class="btn btn-sm"><i class="ti ti-calendar-event"></i>휴가신청</a>`];
-      if(me.role==='admin') btns.push(`<a href="admin.html" class="btn btn-sm"><i class="ti ti-settings"></i>관리자</a>`);
-      nav.innerHTML=btns.join('');
-    }
-  },0);
-  const myPend1 = allLeaves.filter(l=>canA1(me.role)&&l.status==='pending');
-  const myPend2 = allLeaves.filter(l=>canA2(me.role)&&l.status==='approved1');
-  const done    = allLeaves.filter(l=>l.status==='approved'||l.status==='approved1'||l.status==='rejected');
-  const pendCnt = myPend1.length;
+  // pending만 대기 탭에
+  const pending = allLeaves.filter(l=>l.status==='pending');
+  // 나머지는 처리완료
+  const done    = allLeaves.filter(l=>l.status!=='pending');
+  const pendCnt = pending.length;
 
   document.getElementById('wrap').innerHTML = `
   <div class="ph">
@@ -176,21 +215,16 @@ function renderPage(){
       <i class="ti ti-list"></i>처리 완료
     </button>
   </div>
-  ${curTab==='pending' ? renderPending(myPend1,myPend2) : renderDone(done)}`;
+  ${curTab==='pending' ? renderPending(pending) : renderDone(done)}`;
   bindPage();
 }
 
-function renderPending(s1,s2){
-  if(!s1.length&&!s2.length) return `<div class="card"><div class="empty"><i class="ti ti-check"></i><p>처리할 항목이 없습니다</p></div></div>`;
-  return `
-    ${s1.length&&canA1(me.role)?`<div class="card" style="margin-bottom:14px">
-      <div class="ch"><div class="ct"><i class="ti ti-clipboard-check"></i>1차 승인 대기<span class="chip">${s1.length}건</span></div></div>
-      ${leaveTable(s1,true)}
-    </div>`:''}
-    ${s2.length&&canA2(me.role)?`<div class="card">
-      <div class="ch"><div class="ct"><i class="ti ti-checks"></i>최종 승인 대기<span class="chip">${s2.length}건</span></div></div>
-      ${leaveTable(s2,true)}
-    </div>`:''}`;
+function renderPending(leaves){
+  if(!leaves.length) return `<div class="card"><div class="empty"><i class="ti ti-check"></i><p>처리할 항목이 없습니다</p></div></div>`;
+  return `<div class="card">
+    <div class="ch"><div class="ct"><i class="ti ti-clipboard-check"></i>승인 대기<span class="chip">${leaves.length}건</span></div></div>
+    ${leaveTable(leaves,true)}
+  </div>`;
 }
 
 function renderDone(leaves){
@@ -215,20 +249,15 @@ function leaveTable(leaves,showActions){
         <td>
           <div style="display:flex;align-items:center;gap:2px">
             <span class="step-dot done">기안</span>
-            <span class="step-line ${(l.status==='approved1'||l.status==='approved')?'done':''}"></span>
-            <span class="step-dot ${l.status==='rejected'?'rej':(l.status==='approved1'||l.status==='approved')?'done':''}">1차</span>
-            <span class="step-line ${l.status==='approved'?'done':''}"></span>
-            <span class="step-dot ${l.status==='approved'?'done':''}">최종</span>
+            <span class="step-line ${l.status!=='pending'?'done':''}"></span>
+            <span class="step-dot ${l.status==='rejected'?'rej':l.status!=='pending'?'done':''}">승인</span>
           </div>
+          ${l.status!=='pending'&&l.approver1Name?`<div style="font-size:10px;color:var(--gray);margin-top:2px">by ${l.approver1Name}</div>`:''}
         </td>
-        <td><span class="status-badge ${SCLS[l.status]||''}"><span class="sdot"></span>${SLB[l.status]||l.status}</span></td>
+        <td><span class="status-badge ${SCLS[l.status]||'s-pending'}"><span class="sdot"></span>${SLB[l.status]||l.status}</span></td>
         ${showActions?`<td style="white-space:nowrap">
-          ${canA1(me.role)&&l.status==='pending'?`
-            <button class="btn btn-ok btn-sm abtn" data-id="${l.id}" data-step="1" style="margin-bottom:3px"><i class="ti ti-check"></i>1차승인</button><br>
-            <button class="btn btn-ng btn-sm rbtn" data-id="${l.id}"><i class="ti ti-x"></i>반려</button>`:''}
-          ${canA2(me.role)&&l.status==='approved1'?`
-            <button class="btn btn-ok btn-sm abtn" data-id="${l.id}" data-step="2" style="margin-bottom:3px"><i class="ti ti-check"></i>최종승인</button><br>
-            <button class="btn btn-ng btn-sm rbtn" data-id="${l.id}"><i class="ti ti-x"></i>반려</button>`:''}
+          <button class="btn btn-ok btn-sm abtn" data-id="${l.id}" style="margin-bottom:3px"><i class="ti ti-check"></i>승인</button><br>
+          <button class="btn btn-ng btn-sm rbtn" data-id="${l.id}"><i class="ti ti-x"></i>반려</button>
         </td>`:''}
       </tr>`).join('')}
     </tbody>
@@ -249,6 +278,7 @@ function bindPage(){
 
 async function approveLeave(id){
   const l=allLeaves.find(x=>x.id===id);if(!l)return;
+  toast('처리 중...','');
   const calEventId = await addToCalendar(l);
   await updateDoc(doc(db,'leaves',id),{
     status:'approved',
@@ -258,8 +288,11 @@ async function approveLeave(id){
     updatedAt:serverTimestamp()
   });
   const uSnap=await getDoc(doc(db,'users',l.userId));
-  if(uSnap.exists()){const ud=uSnap.data();await updateDoc(doc(db,'users',l.userId),{usedLeave:(ud.usedLeave||0)+l.days});}
-  toast('승인 완료 🎉 캘린더에 등록되었습니다','ok');
+  if(uSnap.exists()){
+    const ud=uSnap.data();
+    await updateDoc(doc(db,'users',l.userId),{usedLeave:(ud.usedLeave||0)+l.days});
+  }
+  toast(calEventId?'승인 완료 🎉 캘린더에 등록되었습니다':'승인 완료 🎉 (캘린더 등록 실패)','ok');
   await fetchData();
 }
 
@@ -276,50 +309,11 @@ function openRejectModal(id){
   document.getElementById('mCn').onclick=closeModal;
   document.getElementById('mRj').onclick=async()=>{
     const reason=document.getElementById('rR').value||'사유 없음';
-    // 캘린더 이벤트 삭제 (혹시 등록되어 있으면)
-    const rLeave = allLeaves.find(x=>x.id===id);
+    const rLeave=allLeaves.find(x=>x.id===id);
     if(rLeave?.calEventId) await removeFromCalendar(rLeave.calEventId);
     await updateDoc(doc(db,'leaves',id),{status:'rejected',rejectedReason:reason,updatedAt:serverTimestamp()});
     toast('반려 처리되었습니다','ok');closeModal();await fetchData();
   };
-}
-
-
-// ── 구글 캘린더 연동 (GET 방식 - CORS 우회) ──────────
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyG-QckSNEIzAOJihgu-iAv93wj74jrKI3nsa1i69U6MICLyM9WeGKudPu6_8h8CdzP/exec';
-const CAL_SECRET      = 'FLYINGJP_CAL_2024';
-
-async function addToCalendar(leave) {
-  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('YOUR_')) return null;
-  try {
-    const params = new URLSearchParams({
-      secret:    CAL_SECRET,
-      action:    'add',
-      userName:  leave.userName  || '',
-      userEmail: leave.userEmail || '',
-      type:      leave.type,
-      startDate: leave.startDate,
-      endDate:   leave.endDate,
-      days:      leave.days,
-      reason:    leave.reason,
-    });
-    const res  = await fetch(`${APPS_SCRIPT_URL}?${params}`, { redirect: 'follow' });
-    const data = await res.json();
-    if(data.success) return data.eventId;
-    console.warn('캘린더 등록 실패:', data.error);
-    return null;
-  } catch(err) {
-    console.warn('캘린더 연동 오류:', err);
-    return null;
-  }
-}
-
-async function removeFromCalendar(eventId) {
-  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('YOUR_') || !eventId) return;
-  try {
-    const params = new URLSearchParams({ secret:CAL_SECRET, action:'remove', eventId });
-    await fetch(`${APPS_SCRIPT_URL}?${params}`, { redirect: 'follow' });
-  } catch(err) { console.warn('캘린더 삭제 오류:', err); }
 }
 
 function showModal(html){
@@ -330,6 +324,31 @@ function showModal(html){
   document.getElementById('mB').onclick=e=>{if(e.target===e.currentTarget)closeModal();};
 }
 function closeModal(){document.getElementById('mW')?.remove();}
+
+// 이름 변경
+document.getElementById('btnEditName')?.addEventListener('click',()=>{
+  showModal(`
+    <div class="modal-title" style="color:#111"><i class="ti ti-pencil" style="color:var(--blue)"></i>이름 변경</div>
+    <div class="fg"><label class="fl">영문 이름</label>
+      <input class="fi" id="newName" value="${dn(me)}" maxlength="30" placeholder="예: Minjun Kim"></div>
+    <div class="fg"><label class="fl">부서</label>
+      <input class="fi" id="newDept" value="${me.dept||''}" maxlength="20" placeholder="예: Operations"></div>
+    <div class="mf">
+      <button class="btn" id="mCn">취소</button>
+      <button class="btn btn-ok" id="mSaveName"><i class="ti ti-check"></i>저장</button>
+    </div>
+  `);
+  document.getElementById('mCn').onclick=closeModal;
+  document.getElementById('mSaveName').onclick=async()=>{
+    const name=document.getElementById('newName').value.trim();
+    const dept=document.getElementById('newDept').value.trim();
+    if(!name)return;
+    await updateDoc(doc(db,'users',me.uid),{name,dept,updatedAt:serverTimestamp()});
+    me.name=name;me.dept=dept;
+    document.getElementById('nameEl').textContent=name;
+    toast('이름이 변경되었습니다','ok');closeModal();
+  };
+});
 
 document.getElementById('btnOut').addEventListener('click',()=>{
   signOut(auth).then(()=>location.href='index.html');
