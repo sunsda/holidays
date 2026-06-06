@@ -564,28 +564,25 @@ function openRejectModal(id){
 }
 
 
-// ── 구글 캘린더 연동 ──────────────────────────────────
-const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/flyingjp.com/s/AKfycbwe7W3QzVf1g_xIu1wAL0fnCsKQ6SRroYuaQqHqIPPp0-n8VSxuG4LRamDhisb08UC8/exec'; // ← 배포 후 URL 붙여넣기
-const CAL_SECRET      = 'FLYINGJP_CAL_2024';          // ← Apps Script와 동일하게
+// ── 구글 캘린더 연동 (GET 방식 - CORS 우회) ──────────
+const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/flyingjp.com/s/AKfycbwe7W3QzVf1g_xIu1wAL0fnCsKQ6SRroYuaQqHqIPPp0-n8VSxuG4LRamDhisb08UC8/exec';
+const CAL_SECRET      = 'FLYINGJP_CAL_2024';
 
 async function addToCalendar(leave) {
   if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('YOUR_')) return null;
   try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        secret:    CAL_SECRET,
-        action:    'add',
-        userName:  leave.userName  || '',
-        userEmail: leave.userEmail || '',
-        type:      leave.type,
-        startDate: leave.startDate,
-        endDate:   leave.endDate,
-        days:      leave.days,
-        reason:    leave.reason,
-      })
+    const params = new URLSearchParams({
+      secret:    CAL_SECRET,
+      action:    'add',
+      userName:  leave.userName  || '',
+      userEmail: leave.userEmail || '',
+      type:      leave.type,
+      startDate: leave.startDate,
+      endDate:   leave.endDate,
+      days:      leave.days,
+      reason:    leave.reason,
     });
+    const res  = await fetch(`${APPS_SCRIPT_URL}?${params}`, { redirect: 'follow' });
     const data = await res.json();
     if(data.success) return data.eventId;
     console.warn('캘린더 등록 실패:', data.error);
@@ -599,11 +596,8 @@ async function addToCalendar(leave) {
 async function removeFromCalendar(eventId) {
   if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('YOUR_') || !eventId) return;
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ secret:CAL_SECRET, action:'remove', eventId })
-    });
+    const params = new URLSearchParams({ secret:CAL_SECRET, action:'remove', eventId });
+    await fetch(`${APPS_SCRIPT_URL}?${params}`, { redirect: 'follow' });
   } catch(err) { console.warn('캘린더 삭제 오류:', err); }
 }
 
