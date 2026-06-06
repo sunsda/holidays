@@ -394,46 +394,86 @@ function tabRoles(){
 function tabGrant(){
   return `
   <div class="card">
-    <div class="ch"><div class="ct"><i class="ti ti-gift"></i>개인별 휴가 부여</div></div>
+    <div class="ch">
+      <div class="ct"><i class="ti ti-gift"></i>개인별 휴가 관리</div>
+      <button class="btn btn-sm" id="doRecalcAll" style="background:var(--warn);color:#fff;border-color:var(--warn)">
+        <i class="ti ti-refresh"></i>전체 사용일 재계산
+      </button>
+    </div>
     <div class="tbl-wrap"><table>
-      <thead><tr><th>직원</th><th>부서</th><th>총 부여</th><th>사용</th><th>잔여</th><th>총 부여 직접 설정</th><th>추가 부여/차감</th></tr></thead>
+      <thead>
+        <tr>
+          <th>직원</th>
+          <th style="text-align:center">총 부여</th>
+          <th style="text-align:center">사용</th>
+          <th style="text-align:center">잔여</th>
+          <th style="text-align:center">실제 승인 합산</th>
+          <th>부여/차감 (+/-)</th>
+          <th>총 부여일 직접 설정</th>
+        </tr>
+      </thead>
       <tbody>
-        ${allUsers.map(u=>`<tr>
-          <td><div style="display:flex;align-items:center;gap:8px">
-            <div class="avatar" style="width:26px;height:26px;font-size:10px">${u.photoURL?`<img src="${u.photoURL}">`:`${ini(u)}`}</div>
-            <div><div style="font-weight:500">${dn(u)}</div><div style="font-size:11px;color:var(--gray)">${u.email}</div></div>
-          </div></td>
-          <td style="font-size:12px">${u.dept||'-'}</td>
-          <td style="font-weight:600;color:var(--blue)">${u.totalLeave||0}일</td>
-          <td style="color:var(--warn)">${u.usedLeave||0}일</td>
-          <td style="color:var(--ok);font-weight:600">${rem(u)}일</td>
-          <td>
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
-              <input type="number" class="leave-input" id="set_${u.uid}" min="0" max="365" value="${u.totalLeave||0}" style="width:65px">
-              <span style="font-size:12px;color:var(--gray)">일로 설정</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-              <input class="dept-input" id="setr_${u.uid}" placeholder="사유" style="width:110px">
+        ${allUsers.map(u=>{
+          const approvedDays = allLeaves
+            .filter(l=>l.userId===u.uid&&(l.status==='approved'||l.status==='approved1'))
+            .reduce((sum,l)=>sum+(l.days||0),0);
+          const diff = (u.usedLeave||0)-approvedDays;
+          const diffOk = Math.abs(diff)<0.1;
+          return `<tr style="vertical-align:middle">
+            <td>
+              <div style="display:flex;align-items:center;gap:9px">
+                <div class="avatar" style="width:30px;height:30px;font-size:11px">${u.photoURL?`<img src="${u.photoURL}">`:`${ini(u)}`}</div>
+                <div>
+                  <div style="font-weight:600;font-size:13px">${dn(u)}</div>
+                  <div style="font-size:11px;color:var(--gray)">${u.email}</div>
+                </div>
+              </div>
+            </td>
+            <td style="text-align:center;font-weight:700;color:var(--blue);font-size:15px">${u.totalLeave||0}일</td>
+            <td style="text-align:center;color:var(--warn);font-weight:600">${u.usedLeave||0}일</td>
+            <td style="text-align:center;font-weight:700;color:${rem(u)>=0?'var(--ok)':'var(--danger)'};font-size:15px">${rem(u)}일</td>
+            <td style="text-align:center">
+              <span style="font-weight:600">${approvedDays}일</span>
+              <div style="font-size:11px;color:${diffOk?'var(--ok)':'var(--danger)'};margin-top:2px">
+                ${diffOk?'✓ 일치':`현재 사용 ${diff>0?'+':''}${diff}일 차이`}
+              </div>
+              <button class="btn btn-sm do-recalc" data-uid="${u.uid}" data-name="${dn(u)}" data-days="${approvedDays}"
+                style="font-size:11px;margin-top:4px;padding:3px 8px;background:var(--warn);color:#fff;border-color:var(--warn)">
+                <i class="ti ti-refresh"></i>사용일 맞추기
+              </button>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
+                <input type="number" class="leave-input" id="gd_${u.uid}" min="1" max="60" value="1" style="width:55px">
+                <span style="font-size:12px;color:var(--gray)">일</span>
+                <input class="dept-input" id="gr_${u.uid}" placeholder="사유" style="width:100px">
+              </div>
+              <div style="display:flex;gap:5px">
+                <button class="btn btn-p btn-sm do-grant" data-uid="${u.uid}" data-name="${dn(u)}">
+                  <i class="ti ti-plus"></i>부여
+                </button>
+                <button class="btn btn-ng btn-sm do-deduct" data-uid="${u.uid}" data-name="${dn(u)}">
+                  <i class="ti ti-minus"></i>차감
+                </button>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
+                <input type="number" class="leave-input" id="set_${u.uid}" min="0" max="365" value="${u.totalLeave||0}" style="width:60px">
+                <span style="font-size:12px;color:var(--gray)">일</span>
+                <input class="dept-input" id="setr_${u.uid}" placeholder="사유" style="width:100px">
+              </div>
               <button class="btn btn-sm do-set" data-uid="${u.uid}" data-name="${dn(u)}" data-cur="${u.totalLeave||0}"
-                style="background:#374151;color:#fff;border-color:#374151;padding:5px 10px;font-size:12px">
+                style="background:#374151;color:#fff;border-color:#374151">
                 <i class="ti ti-check"></i>설정
               </button>
-            </div>
-          </td>
-          <td>
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
-              <input type="number" class="leave-input" id="gd_${u.uid}" min="1" max="60" value="1">
-              <input class="dept-input" id="gr_${u.uid}" placeholder="사유 입력" style="width:110px">
-            </div>
-            <div style="display:flex;gap:5px">
-              <button class="btn btn-p btn-sm do-grant" data-uid="${u.uid}" data-name="${dn(u)}"><i class="ti ti-plus"></i>부여</button>
-              <button class="btn btn-ng btn-sm do-deduct" data-uid="${u.uid}" data-name="${dn(u)}"><i class="ti ti-minus"></i>차감</button>
-            </div>
-          </td>
-        </tr>`).join('')}
+            </td>
+          </tr>`;
+        }).join('')}
       </tbody>
     </table></div>
   </div>
+
   <div class="card" style="background:#f0fdf4;border-color:#86efac">
     <div class="ch"><div class="ct" style="color:#166534"><i class="ti ti-users" style="color:var(--ok)"></i>전체 일괄 부여</div></div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -443,55 +483,6 @@ function tabGrant(){
       <input class="fi" id="bulkReason" placeholder="부여 사유 (예: 2026년 연차)" style="width:200px;padding:7px 10px">
       <button class="btn btn-ok btn-sm" id="doBulk"><i class="ti ti-gift"></i>일괄 부여</button>
     </div>
-  </div>
-
-  <div class="card" style="border-color:#e5e7eb">
-    <div class="ch">
-      <div class="ct"><i class="ti ti-tool"></i>데이터 정리 도구</div>
-      <button class="btn btn-sm" id="doRecalcAll" style="background:var(--warn);color:#fff;border-color:var(--warn)">
-        <i class="ti ti-refresh"></i>전체 사용일 재계산
-      </button>
-    </div>
-    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#78350f;margin-bottom:14px;line-height:1.8">
-      <b>사용일 재계산</b> — 실제 승인된 휴가 합산으로 usedLeave를 자동 수정<br>
-      <b>직접 수정</b> — 총부여/사용일을 원하는 값으로 설정 후 <b>적용</b> 클릭
-    </div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>직원</th><th>현재 총부여</th><th>현재 사용</th><th>승인된 휴가 합산</th><th>총부여 수정</th><th>사용일 수정</th><th>적용</th></tr></thead>
-      <tbody>
-        ${allUsers.map(u=>{
-          const approvedDays = allLeaves
-            .filter(l=>l.userId===u.uid && (l.status==='approved'||l.status==='approved1'))
-            .reduce((sum,l)=>sum+(l.days||0),0);
-          const diff = (u.usedLeave||0) - approvedDays;
-          const diffColor = Math.abs(diff)<0.1?'var(--ok)':diff>0?'var(--danger)':'var(--warn)';
-          const diffText = Math.abs(diff)<0.1?'✓ 일치':`${diff>0?'+':''}${diff}일 차이`;
-          return `<tr>
-            <td><div style="font-weight:500">${dn(u)}</div><div style="font-size:11px;color:var(--gray)">${u.email}</div></td>
-            <td style="font-weight:600;color:var(--blue)">${u.totalLeave||0}일</td>
-            <td style="color:var(--warn)">${u.usedLeave||0}일</td>
-            <td>
-              <span style="font-weight:600;color:var(--ok)">${approvedDays}일</span>
-              <span style="font-size:11px;color:${diffColor};margin-left:6px">${diffText}</span>
-            </td>
-            <td><input type="number" class="leave-input" id="rt_${u.uid}" value="${u.totalLeave||0}" min="0" max="365" style="width:65px"></td>
-            <td><input type="number" class="leave-input" id="ru_${u.uid}" value="${u.usedLeave||0}" min="0" max="365" style="width:65px"></td>
-            <td style="white-space:nowrap">
-              <div style="display:flex;flex-direction:column;gap:5px">
-                <button class="btn btn-sm do-reset" data-uid="${u.uid}" data-name="${dn(u)}"
-                  style="background:#374151;color:#fff;border-color:#374151;font-size:11px">
-                  <i class="ti ti-check"></i>직접 적용
-                </button>
-                <button class="btn btn-sm do-recalc" data-uid="${u.uid}" data-name="${dn(u)}" data-days="${approvedDays}"
-                  style="background:var(--warn);color:#fff;border-color:var(--warn);font-size:11px">
-                  <i class="ti ti-refresh"></i>자동 재계산
-                </button>
-              </div>
-            </td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table></div>
   </div>`;
 }
 
