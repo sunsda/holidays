@@ -395,83 +395,112 @@ function tabGrant(){
   return `
   <div class="card">
     <div class="ch">
-      <div class="ct"><i class="ti ti-gift"></i>개인별 휴가 관리</div>
+      <div class="ct"><i class="ti ti-users"></i>직원별 휴가 현황</div>
       <button class="btn btn-sm" id="doRecalcAll" style="background:var(--warn);color:#fff;border-color:var(--warn)">
-        <i class="ti ti-refresh"></i>전체 사용일 재계산
+        <i class="ti ti-refresh"></i>사용일 전체 재계산
       </button>
     </div>
-    <div class="tbl-wrap"><table>
-      <thead>
-        <tr>
-          <th>직원</th>
-          <th style="text-align:center">총 부여</th>
-          <th style="text-align:center">사용</th>
-          <th style="text-align:center">잔여</th>
-          <th style="text-align:center">실제 승인 합산</th>
-          <th>부여/차감 (+/-)</th>
-          <th>총 부여일 직접 설정</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${allUsers.map(u=>{
-          const approvedDays = allLeaves
-            .filter(l=>l.userId===u.uid&&(l.status==='approved'||l.status==='approved1'))
-            .reduce((sum,l)=>sum+(l.days||0),0);
-          const diff = (u.usedLeave||0)-approvedDays;
-          const diffOk = Math.abs(diff)<0.1;
-          return `<tr style="vertical-align:middle">
-            <td>
-              <div style="display:flex;align-items:center;gap:9px">
-                <div class="avatar" style="width:30px;height:30px;font-size:11px">${u.photoURL?`<img src="${u.photoURL}">`:`${ini(u)}`}</div>
-                <div>
-                  <div style="font-weight:600;font-size:13px">${dn(u)}</div>
-                  <div style="font-size:11px;color:var(--gray)">${u.email}</div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      ${allUsers.map(u=>{
+        const approvedDays = allLeaves
+          .filter(l=>l.userId===u.uid&&(l.status==='approved'||l.status==='approved1'))
+          .reduce((sum,l)=>sum+(l.days||0),0);
+        const diff = (u.usedLeave||0)-approvedDays;
+        const diffOk = Math.abs(diff)<0.1;
+        const r = rem(u);
+        return `
+        <div style="border-bottom:1px solid var(--border)">
+          <!-- 직원 행 (클릭으로 토글) -->
+          <div class="grant-row" data-uid="${u.uid}"
+            style="display:flex;align-items:center;padding:14px 4px;cursor:pointer;gap:14px;transition:.1s;border-radius:8px"
+            onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''"
+          >
+            <div class="avatar" style="width:36px;height:36px;font-size:13px;flex-shrink:0">
+              ${u.photoURL?`<img src="${u.photoURL}">`:`${ini(u)}`}
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:600;font-size:14px">${dn(u)}</div>
+              <div style="font-size:11px;color:var(--gray)">${u.email}${u.dept?' · '+u.dept:''}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:20px;margin-right:8px">
+              <div style="text-align:center">
+                <div style="font-size:10px;color:var(--gray);margin-bottom:2px">총 부여</div>
+                <div style="font-weight:700;color:var(--blue);font-size:16px">${u.totalLeave||0}일</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-size:10px;color:var(--gray);margin-bottom:2px">사용</div>
+                <div style="font-weight:600;color:var(--warn);font-size:16px">${u.usedLeave||0}일</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-size:10px;color:var(--gray);margin-bottom:2px">잔여</div>
+                <div style="font-weight:700;font-size:16px;color:${r>=0?'var(--ok)':'var(--danger)'}">${r}일</div>
+              </div>
+              ${!diffOk?`<div style="background:#fee2e2;color:var(--danger);font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500">
+                사용일 불일치
+              </div>`:''}
+            </div>
+            <i class="ti ti-chevron-down grant-arrow" data-uid="${u.uid}" style="font-size:16px;color:var(--gray);transition:.2s;flex-shrink:0"></i>
+          </div>
+
+          <!-- 펼쳐지는 설정 패널 -->
+          <div class="grant-panel" id="panel_${u.uid}" style="display:none;padding:0 4px 16px 50px">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+
+              <!-- 부여 -->
+              <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px">
+                <div style="font-size:12px;font-weight:600;color:#166534;margin-bottom:10px;display:flex;align-items:center;gap:5px">
+                  <i class="ti ti-plus"></i>휴가 부여
                 </div>
-              </div>
-            </td>
-            <td style="text-align:center;font-weight:700;color:var(--blue);font-size:15px">${u.totalLeave||0}일</td>
-            <td style="text-align:center;color:var(--warn);font-weight:600">${u.usedLeave||0}일</td>
-            <td style="text-align:center;font-weight:700;color:${rem(u)>=0?'var(--ok)':'var(--danger)'};font-size:15px">${rem(u)}일</td>
-            <td style="text-align:center">
-              <span style="font-weight:600">${approvedDays}일</span>
-              <div style="font-size:11px;color:${diffOk?'var(--ok)':'var(--danger)'};margin-top:2px">
-                ${diffOk?'✓ 일치':`현재 사용 ${diff>0?'+':''}${diff}일 차이`}
-              </div>
-              <button class="btn btn-sm do-recalc" data-uid="${u.uid}" data-name="${dn(u)}" data-days="${approvedDays}"
-                style="font-size:11px;margin-top:4px;padding:3px 8px;background:var(--warn);color:#fff;border-color:var(--warn)">
-                <i class="ti ti-refresh"></i>사용일 맞추기
-              </button>
-            </td>
-            <td>
-              <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
-                <input type="number" class="leave-input" id="gd_${u.uid}" min="1" max="60" value="1" style="width:55px">
-                <span style="font-size:12px;color:var(--gray)">일</span>
-                <input class="dept-input" id="gr_${u.uid}" placeholder="사유" style="width:100px">
-              </div>
-              <div style="display:flex;gap:5px">
-                <button class="btn btn-p btn-sm do-grant" data-uid="${u.uid}" data-name="${dn(u)}">
-                  <i class="ti ti-plus"></i>부여
-                </button>
-                <button class="btn btn-ng btn-sm do-deduct" data-uid="${u.uid}" data-name="${dn(u)}">
-                  <i class="ti ti-minus"></i>차감
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                  <input type="number" class="leave-input" id="gd_${u.uid}" min="1" max="60" value="1" style="width:60px">
+                  <span style="font-size:12px;color:#166534">일</span>
+                </div>
+                <input class="fi" id="gr_${u.uid}" placeholder="부여 사유" style="font-size:12px;padding:7px 9px;margin-bottom:8px">
+                <button class="btn btn-ok btn-sm do-grant" data-uid="${u.uid}" data-name="${dn(u)}" style="width:100%;justify-content:center">
+                  <i class="ti ti-plus"></i>부여하기
                 </button>
               </div>
-            </td>
-            <td>
-              <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
-                <input type="number" class="leave-input" id="set_${u.uid}" min="0" max="365" value="${u.totalLeave||0}" style="width:60px">
-                <span style="font-size:12px;color:var(--gray)">일</span>
-                <input class="dept-input" id="setr_${u.uid}" placeholder="사유" style="width:100px">
+
+              <!-- 차감 -->
+              <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:10px;padding:14px">
+                <div style="font-size:12px;font-weight:600;color:#991b1b;margin-bottom:10px;display:flex;align-items:center;gap:5px">
+                  <i class="ti ti-minus"></i>휴가 차감
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                  <input type="number" class="leave-input" id="dd_${u.uid}" min="1" max="60" value="1" style="width:60px">
+                  <span style="font-size:12px;color:#991b1b">일</span>
+                </div>
+                <input class="fi" id="dr_${u.uid}" placeholder="차감 사유" style="font-size:12px;padding:7px 9px;margin-bottom:8px">
+                <button class="btn btn-ng btn-sm do-deduct" data-uid="${u.uid}" data-name="${dn(u)}" style="width:100%;justify-content:center">
+                  <i class="ti ti-minus"></i>차감하기
+                </button>
               </div>
-              <button class="btn btn-sm do-set" data-uid="${u.uid}" data-name="${dn(u)}" data-cur="${u.totalLeave||0}"
-                style="background:#374151;color:#fff;border-color:#374151">
-                <i class="ti ti-check"></i>설정
-              </button>
-            </td>
-          </tr>`;
-        }).join('')}
-      </tbody>
-    </table></div>
+
+              <!-- 직접 설정 -->
+              <div style="background:#f8faff;border:1px solid #c7d7f8;border-radius:10px;padding:14px">
+                <div style="font-size:12px;font-weight:600;color:#1e40af;margin-bottom:10px;display:flex;align-items:center;gap:5px">
+                  <i class="ti ti-pencil"></i>직접 설정
+                </div>
+                <div style="font-size:11px;color:var(--gray);margin-bottom:6px">총 부여일수를 직접 입력</div>
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                  <input type="number" class="leave-input" id="set_${u.uid}" min="0" max="365" value="${u.totalLeave||0}" style="width:60px">
+                  <span style="font-size:12px;color:#1e40af">일로 설정</span>
+                </div>
+                <input class="fi" id="setr_${u.uid}" placeholder="설정 사유" style="font-size:12px;padding:7px 9px;margin-bottom:8px">
+                <button class="btn btn-sm do-set" data-uid="${u.uid}" data-name="${dn(u)}" data-cur="${u.totalLeave||0}"
+                  style="background:#1e40af;color:#fff;border-color:#1e40af;width:100%;justify-content:center">
+                  <i class="ti ti-check"></i>설정하기
+                </button>
+                ${!diffOk?`<button class="btn btn-sm do-recalc" data-uid="${u.uid}" data-name="${dn(u)}" data-days="${approvedDays}"
+                  style="background:var(--warn);color:#fff;border-color:var(--warn);width:100%;justify-content:center;margin-top:6px">
+                  <i class="ti ti-refresh"></i>사용일 자동 맞추기 (${approvedDays}일)
+                </button>`:''}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
   </div>
 
   <div class="card" style="background:#f0fdf4;border-color:#86efac">
@@ -608,8 +637,8 @@ function bindAdminPage(){
   document.querySelectorAll('.do-deduct').forEach(btn=>{
     btn.onclick=async()=>{
       const uid=btn.dataset.uid,name=btn.dataset.name;
-      const days=parseInt(document.getElementById(`gd_${uid}`)?.value)||0;
-      const reason=document.getElementById(`gr_${uid}`)?.value.trim()||'관리자 차감';
+      const days=parseInt(document.getElementById(`dd_${uid}`)?.value)||0;
+      const reason=document.getElementById(`dr_${uid}`)?.value.trim()||'관리자 차감';
       if(days<1){toast('일수를 입력해주세요','err');return;}
       const u=allUsers.find(x=>x.uid===uid);
       const before=u?.totalLeave||0;
@@ -627,6 +656,23 @@ function bindAdminPage(){
       await fetchData(); renderAdminPage();
     };
   });
+  // 토글 패널
+  document.querySelectorAll('.grant-row').forEach(row=>{
+    row.onclick=()=>{
+      const uid = row.dataset.uid;
+      const panel = document.getElementById(`panel_${uid}`);
+      const arrow = document.querySelector(`.grant-arrow[data-uid="${uid}"]`);
+      const isOpen = panel.style.display !== 'none';
+      // 모두 닫기
+      document.querySelectorAll('.grant-panel').forEach(p=>p.style.display='none');
+      document.querySelectorAll('.grant-arrow').forEach(a=>a.style.transform='');
+      if(!isOpen){
+        panel.style.display='block';
+        if(arrow) arrow.style.transform='rotate(180deg)';
+      }
+    };
+  });
+
   // 개별 리셋 적용
   document.querySelectorAll('.do-reset').forEach(btn=>{
     btn.onclick=async()=>{
