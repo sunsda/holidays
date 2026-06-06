@@ -400,11 +400,16 @@ function tabGrant(){
           <td style="font-weight:600;color:var(--blue)">${u.totalLeave||0}일</td>
           <td style="color:var(--warn)">${u.usedLeave||0}일</td>
           <td style="color:var(--ok);font-weight:600">${rem(u)}일</td>
-          <td><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-            <input type="number" class="leave-input" id="gd_${u.uid}" min="1" max="60" value="1">
-            <button class="btn btn-p btn-sm do-grant" data-uid="${u.uid}" data-name="${dn(u)}" data-total="${u.totalLeave||0}"><i class="ti ti-plus"></i>부여</button>
-            <button class="btn btn-ng btn-sm do-deduct" data-uid="${u.uid}" data-name="${dn(u)}" data-total="${u.totalLeave||0}"><i class="ti ti-minus"></i>차감</button>
-          </div></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
+              <input type="number" class="leave-input" id="gd_${u.uid}" min="1" max="60" value="1">
+              <input class="dept-input" id="gr_${u.uid}" placeholder="사유 입력" style="width:130px">
+            </div>
+            <div style="display:flex;gap:5px">
+              <button class="btn btn-p btn-sm do-grant" data-uid="${u.uid}" data-name="${dn(u)}"><i class="ti ti-plus"></i>부여</button>
+              <button class="btn btn-ng btn-sm do-deduct" data-uid="${u.uid}" data-name="${dn(u)}"><i class="ti ti-minus"></i>차감</button>
+            </div>
+          </td>
         </tr>`).join('')}
       </tbody>
     </table></div>
@@ -414,7 +419,8 @@ function tabGrant(){
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
       <span style="font-size:13px;color:#166534">전체 직원 ${allUsers.length}명에게</span>
       <input type="number" class="fi" id="bulkDays" min="1" max="30" value="1" style="width:70px;padding:7px 10px">
-      <span style="font-size:13px;color:#166534">일 일괄 추가</span>
+      <span style="font-size:13px;color:#166534">일</span>
+      <input class="fi" id="bulkReason" placeholder="부여 사유 (예: 2026년 연차)" style="width:200px;padding:7px 10px">
       <button class="btn btn-ok btn-sm" id="doBulk"><i class="ti ti-gift"></i>일괄 부여</button>
     </div>
   </div>`;
@@ -498,9 +504,19 @@ function bindAdminPage(){
     btn.onclick=async()=>{
       const uid=btn.dataset.uid,name=btn.dataset.name;
       const days=parseInt(document.getElementById(`gd_${uid}`)?.value)||0;
+      const reason=document.getElementById(`gr_${uid}`)?.value.trim()||'관리자 부여';
       if(days<1){toast('일수를 입력해주세요','err');return;}
       const u=allUsers.find(x=>x.uid===uid);
-      await updateDoc(doc(db,'users',uid),{totalLeave:(u?.totalLeave||0)+days});
+      const before=u?.totalLeave||0, after=before+days;
+      await updateDoc(doc(db,'users',uid),{totalLeave:after});
+      // 이력 기록
+      await addDoc(collection(db,'leaveHistory'),{
+        userId:uid, userName:name,
+        type:'grant', days, reason,
+        before, after,
+        byUid:me.uid, byName:dn(me),
+        createdAt:serverTimestamp()
+      });
       toast(`${name}님에게 ${days}일 부여 완료`,'ok');
       await fetchData(); renderAdminPage();
     };
@@ -509,20 +525,42 @@ function bindAdminPage(){
     btn.onclick=async()=>{
       const uid=btn.dataset.uid,name=btn.dataset.name;
       const days=parseInt(document.getElementById(`gd_${uid}`)?.value)||0;
+      const reason=document.getElementById(`gr_${uid}`)?.value.trim()||'관리자 차감';
       if(days<1){toast('일수를 입력해주세요','err');return;}
       const u=allUsers.find(x=>x.uid===uid);
-      const newTotal=Math.max(0,(u?.totalLeave||0)-days);
-      if(!confirm(`${name}님의 휴가를 ${days}일 차감할까요? (${u?.totalLeave||0}일 → ${newTotal}일)`))return;
-      await updateDoc(doc(db,'users',uid),{totalLeave:newTotal});
-      toast(`${name}님 휴가 ${days}일 차감 완료`,'ok');
+      const before=u?.totalLeave||0;
+      const after=Math.max(0,before-days);
+      if(!confirm(`${name}님의 휴가를 ${days}일 차감할까요?\n${before}일 → ${after}일\n사유: ${reason}`))return;
+      await updateDoc(doc(db,'users',uid),{totalLeave:after});
+      await addDoc(collection(db,'leaveHistory'),{
+        userId:uid, userName:name,
+        type:'deduct', days, reason,
+        before, after,
+        byUid:me.uid, byName:dn(me),
+        createdAt:serverTimestamp()
+      });
+      toast(`${name}님 ${days}일 차감 완료`,'ok');
       await fetchData(); renderAdminPage();
     };
   });
   document.getElementById('doBulk')?.addEventListener('click',async()=>{
     const days=parseInt(document.getElementById('bulkDays').value)||0;
+    const reason=document.getElementById('bulkReason')?.value.trim()||'일괄 부여';
     if(days<1){toast('일수를 입력해주세요','err');return;}
-    if(!confirm(`전체 ${allUsers.length}명에게 ${days}일씩 부여할까요?`))return;
-    await Promise.all(allUsers.map(u=>updateDoc(doc(db,'users',u.uid),{totalLeave:(u.totalLeave||0)+days})));
+    if(!confirm(`전체 ${allUsers.length}명에게 ${days}일씩 부여할까요?\n사유: ${reason}`))return;
+    await Promise.all(allUsers.map(u=>{
+      const before=u.totalLeave||0, after=before+days;
+      return Promise.all([
+        updateDoc(doc(db,'users',u.uid),{totalLeave:after}),
+        addDoc(collection(db,'leaveHistory'),{
+          userId:u.uid, userName:dn(u),
+          type:'grant', days, reason,
+          before, after,
+          byUid:me.uid, byName:dn(me),
+          createdAt:serverTimestamp()
+        })
+      ]);
+    }));
     toast(`전체 직원에게 ${days}일 일괄 부여 완료`,'ok');
     await fetchData(); renderAdminPage();
   });

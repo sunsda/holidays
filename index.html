@@ -170,7 +170,7 @@ function showNameSetup(fbUser, ref, existing=null){
         uid:fbUser.uid, name, email:fbUser.email,
         photoURL:fbUser.photoURL||null,
         role:'user', dept,
-        totalLeave:15, usedLeave:0,
+        totalLeave:0, usedLeave:0,
         createdAt:serverTimestamp()
       });
     }
