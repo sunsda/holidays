@@ -389,7 +389,7 @@ function tabGrant(){
   <div class="card">
     <div class="ch"><div class="ct"><i class="ti ti-gift"></i>개인별 휴가 부여</div></div>
     <div class="tbl-wrap"><table>
-      <thead><tr><th>직원</th><th>부서</th><th>부여</th><th>사용</th><th>잔여</th><th>추가 부여</th></tr></thead>
+      <thead><tr><th>직원</th><th>부서</th><th>총 부여</th><th>사용</th><th>잔여</th><th>총 부여 직접 설정</th><th>추가 부여/차감</th></tr></thead>
       <tbody>
         ${allUsers.map(u=>`<tr>
           <td><div style="display:flex;align-items:center;gap:8px">
@@ -402,8 +402,21 @@ function tabGrant(){
           <td style="color:var(--ok);font-weight:600">${rem(u)}일</td>
           <td>
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
+              <input type="number" class="leave-input" id="set_${u.uid}" min="0" max="365" value="${u.totalLeave||0}" style="width:65px">
+              <span style="font-size:12px;color:var(--gray)">일로 설정</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <input class="dept-input" id="setr_${u.uid}" placeholder="사유" style="width:110px">
+              <button class="btn btn-sm do-set" data-uid="${u.uid}" data-name="${dn(u)}" data-cur="${u.totalLeave||0}"
+                style="background:#6b7280;color:#fff;border-color:#6b7280;padding:5px 10px;font-size:12px">
+                <i class="ti ti-pencil"></i>설정
+              </button>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">
               <input type="number" class="leave-input" id="gd_${u.uid}" min="1" max="60" value="1">
-              <input class="dept-input" id="gr_${u.uid}" placeholder="사유 입력" style="width:130px">
+              <input class="dept-input" id="gr_${u.uid}" placeholder="사유 입력" style="width:110px">
             </div>
             <div style="display:flex;gap:5px">
               <button class="btn btn-p btn-sm do-grant" data-uid="${u.uid}" data-name="${dn(u)}"><i class="ti ti-plus"></i>부여</button>
@@ -500,6 +513,30 @@ function bindAdminPage(){
       await fetchData(); renderAdminPage();
     };
   });
+  // 총 부여 직접 설정
+  document.querySelectorAll('.do-set').forEach(btn=>{
+    btn.onclick=async()=>{
+      const uid=btn.dataset.uid, name=btn.dataset.name;
+      const cur=parseInt(btn.dataset.cur)||0;
+      const newTotal=parseInt(document.getElementById(`set_${uid}`)?.value);
+      const reason=document.getElementById(`setr_${uid}`)?.value.trim()||'관리자 직접 설정';
+      if(isNaN(newTotal)||newTotal<0){toast('올바른 일수를 입력해주세요','err');return;}
+      if(!confirm(`${name}님의 총 부여일수를 ${cur}일 → ${newTotal}일로 설정할까요?\n사유: ${reason}`))return;
+      await updateDoc(doc(db,'users',uid),{totalLeave:newTotal});
+      await addDoc(collection(db,'leaveHistory'),{
+        userId:uid, userName:name,
+        type: newTotal>=cur ? 'grant' : 'deduct',
+        days: Math.abs(newTotal-cur),
+        reason: `[직접설정] ${reason}`,
+        before: cur, after: newTotal,
+        byUid:me.uid, byName:dn(me),
+        createdAt:serverTimestamp()
+      });
+      toast(`${name}님 총 부여일수 → ${newTotal}일 설정 완료`,'ok');
+      await fetchData(); renderAdminPage();
+    };
+  });
+
   document.querySelectorAll('.do-grant').forEach(btn=>{
     btn.onclick=async()=>{
       const uid=btn.dataset.uid,name=btn.dataset.name;
