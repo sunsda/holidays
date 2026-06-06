@@ -319,7 +319,7 @@ function openLeaveModal(existing, isReapply){
   const defEnd   = existing?.endDate   || today();
   const defReason= isReapply ? '' : (existing?.reason || '');
   const defA1    = existing?.approver1Id || a1s[0]?.uid || '';
-  const defA2    = existing?.approver2Id || a2s[0]?.uid || '';
+  const defA2    = existing?.approver2Id || '';
 
   showModal(`
     <div class="modal-title"><i class="ti ${titleIcon}"></i>${title}</div>
@@ -353,12 +353,11 @@ function openLeaveModal(existing, isReapply){
     const e     = document.getElementById('mE').value;
     const reason= document.getElementById('mR').value.trim();
     const a1id  = document.getElementById('mA1').value;
-    const a2id  = document.getElementById('mA2').value;
     if(!reason){ toast('사유를 입력해주세요','err'); return; }
     const days = calcDays(type,s,e);
     if(days > curRemain){ toast(`잔여 휴가 부족 (잔여 ${curRemain}일)`,'err'); return; }
     const a1u = allUsers.find(u=>u.uid===a1id);
-    const a2u = allUsers.find(u=>u.uid===a2id);
+
 
     if(isEdit && existing){
       // 수정: 기존 문서 업데이트
