@@ -328,65 +328,35 @@ function leaveTable(leaves){
 }
 
 function historyTable(history){
-  // 부여/차감 이력 + 승인된 휴가 사용 이력 합쳐서 보여주기
-  const leaveUsed = myLeaves
-    .filter(l=>l.status==='approved'||l.status==='approved1')
-    .map(l=>({
-      type:'used',
-      days: l.days,
-      reason: `[${l.type}] ${l.reason}`,
-      byName: l.approver1Name||'승인자',
-      date: l.updatedAt?.seconds||l.createdAt?.seconds||0,
-      startDate: l.startDate,
-      endDate: l.endDate,
-    }));
-
-  // 합치고 날짜순 정렬
-  const all = [
-    ...history.map(h=>({...h, date: h.createdAt?.seconds||0})),
-    ...leaveUsed
-  ].sort((a,b)=>b.date-a.date);
+  // 관리자가 부여/차감한 이력만 표시
+  const all = history
+    .map(h=>({...h, date: h.createdAt?.seconds||0}))
+    .sort((a,b)=>b.date-a.date);
 
   if(!all.length) return `
-    <div style="text-align:center;padding:40px;color:var(--gray)">
-      <i class="ti ti-inbox" style="font-size:36px;opacity:.3;display:block;margin-bottom:10px"></i>
-      <p style="font-size:13px">이력이 없습니다</p>
-      <p style="font-size:12px;margin-top:4px;color:#9ca3af">관리자가 휴가를 부여하거나 승인되면 여기에 표시됩니다</p>
+    <div style="text-align:center;padding:48px;color:var(--gray)">
+      <i class="ti ti-inbox" style="font-size:40px;opacity:.25;display:block;margin-bottom:12px"></i>
+      <p style="font-size:14px;font-weight:500">부여 이력이 없습니다</p>
+      <p style="font-size:12px;margin-top:6px;color:#9ca3af">관리자가 휴가를 부여하면 여기에 표시됩니다</p>
     </div>`;
 
   return `<div class="tbl-wrap"><table>
-    <thead><tr><th>유형</th><th>일수</th><th>변동/기간</th><th>사유</th><th>처리자</th><th>날짜</th></tr></thead>
+    <thead><tr><th>유형</th><th>일수</th><th>변동</th><th>사유</th><th>처리자</th><th>날짜</th></tr></thead>
     <tbody>
       ${all.map(h=>{
         const isGrant = h.type==='grant';
-        const isReset = h.type==='reset';
-        const isUsed  = h.type==='used';
         const dt = h.date ? new Date(h.date*1000).toLocaleDateString('ko-KR') : '-';
-
-        let badge, days, change;
-        if(isGrant){
-          badge = `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#d1fae5;color:#065f46">▲ 부여</span>`;
-          days  = `<span style="font-weight:600;color:var(--ok)">+${h.days}일</span>`;
-          change= `${h.before||0}일 → ${h.after||0}일`;
-        } else if(isReset){
-          badge = `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#e0e7ff;color:#3730a3">⚙ 수정</span>`;
-          days  = `<span style="font-weight:600;color:#6366f1">${h.after||0}일</span>`;
-          change= `직접 수정`;
-        } else if(isUsed){
-          badge = `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#fee2e2;color:#991b1b">▼ 사용</span>`;
-          days  = `<span style="font-weight:600;color:var(--danger)">−${h.days}일</span>`;
-          change= h.startDate===h.endDate ? h.startDate : `${h.startDate}~${h.endDate}`;
-        } else {
-          badge = `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#fee2e2;color:#991b1b">▼ 차감</span>`;
-          days  = `<span style="font-weight:600;color:var(--danger)">−${h.days}일</span>`;
-          change= `${h.before||0}일 → ${h.after||0}일`;
-        }
-
+        const badge = isGrant
+          ? `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#d1fae5;color:#065f46">▲ 부여</span>`
+          : `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#fee2e2;color:#991b1b">▼ 차감</span>`;
+        const daysEl = isGrant
+          ? `<span style="font-weight:700;color:var(--ok);font-size:15px">+${h.days}일</span>`
+          : `<span style="font-weight:700;color:var(--danger);font-size:15px">−${h.days}일</span>`;
         return `<tr>
           <td>${badge}</td>
-          <td>${days}</td>
-          <td style="font-size:12px;color:var(--gray)">${change}</td>
-          <td style="font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${h.reason||'-'}">${h.reason||'-'}</td>
+          <td>${daysEl}</td>
+          <td style="font-size:12px;color:var(--gray)">${h.before||0}일 → ${h.after||0}일</td>
+          <td style="font-size:13px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${h.reason||'-'}">${h.reason||'-'}</td>
           <td style="font-size:12px;color:var(--gray)">${h.byName||'-'}</td>
           <td style="font-size:12px;color:var(--gray);white-space:nowrap">${dt}</td>
         </tr>`;
