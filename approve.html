@@ -254,10 +254,16 @@ async function approveLeave(id,step){
     await updateDoc(doc(db,'leaves',id),{status:'approved1',updatedAt:serverTimestamp()});
     toast('1차 승인 완료','ok');
   } else {
-    await updateDoc(doc(db,'leaves',id),{status:'approved',updatedAt:serverTimestamp()});
+    // 캘린더 등록
+    const calEventId = await addToCalendar(l);
+    await updateDoc(doc(db,'leaves',id),{
+      status:'approved',
+      calEventId: calEventId||'',
+      updatedAt:serverTimestamp()
+    });
     const uSnap=await getDoc(doc(db,'users',l.userId));
     if(uSnap.exists()){const ud=uSnap.data();await updateDoc(doc(db,'users',l.userId),{usedLeave:(ud.usedLeave||0)+l.days});}
-    toast('최종 승인 완료 🎉','ok');
+    toast('최종 승인 완료 🎉 캘린더에 등록되었습니다','ok');
   }
   await fetchData();
 }
@@ -275,9 +281,56 @@ function openRejectModal(id){
   document.getElementById('mCn').onclick=closeModal;
   document.getElementById('mRj').onclick=async()=>{
     const reason=document.getElementById('rR').value||'사유 없음';
+    // 캘린더 이벤트 삭제 (혹시 등록되어 있으면)
+    const rLeave = allLeaves.find(x=>x.id===id);
+    if(rLeave?.calEventId) await removeFromCalendar(rLeave.calEventId);
     await updateDoc(doc(db,'leaves',id),{status:'rejected',rejectedReason:reason,updatedAt:serverTimestamp()});
     toast('반려 처리되었습니다','ok');closeModal();await fetchData();
   };
+}
+
+
+// ── 구글 캘린더 연동 ──────────────────────────────────
+const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/flyingjp.com/s/AKfycbwe7W3QzVf1g_xIu1wAL0fnCsKQ6SRroYuaQqHqIPPp0-n8VSxuG4LRamDhisb08UC8/exec'; // ← 배포 후 URL 붙여넣기
+const CAL_SECRET      = 'FLYINGJP_CAL_2024';          // ← Apps Script와 동일하게
+
+async function addToCalendar(leave) {
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('YOUR_')) return null;
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        secret:    CAL_SECRET,
+        action:    'add',
+        userName:  leave.userName  || '',
+        userEmail: leave.userEmail || '',
+        type:      leave.type,
+        startDate: leave.startDate,
+        endDate:   leave.endDate,
+        days:      leave.days,
+        reason:    leave.reason,
+      })
+    });
+    const data = await res.json();
+    if(data.success) return data.eventId;
+    console.warn('캘린더 등록 실패:', data.error);
+    return null;
+  } catch(err) {
+    console.warn('캘린더 연동 오류:', err);
+    return null;
+  }
+}
+
+async function removeFromCalendar(eventId) {
+  if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('YOUR_') || !eventId) return;
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ secret:CAL_SECRET, action:'remove', eventId })
+    });
+  } catch(err) { console.warn('캘린더 삭제 오류:', err); }
 }
 
 function showModal(html){
