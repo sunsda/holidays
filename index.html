@@ -132,16 +132,16 @@ function showNameSetup(fbUser, ref, existing=null){
     <div class="avatar-wrap">
       ${fbUser.photoURL ? `<img src="${fbUser.photoURL}">` : googleName.slice(0,2).toUpperCase()||'FJ'}
     </div>
-    <div class="setup-title">안녕하세요! 👋</div>
+    <div class="setup-title">Welcome! 👋</div>
     <div class="setup-sub">
       처음 로그인하셨네요.<br>
-      휴가대장에서 사용할 <b>한국어 이름</b>을 입력해주세요.
+      캘린더에 표시될 <b>영문 이름</b>을 입력해주세요.
     </div>
     <div class="fg">
-      <label class="fl">이름 (한국어)</label>
-      <input class="fi" id="nameInput" type="text" placeholder="예: 김민준" maxlength="10"
+      <label class="fl">영문 이름 (English Name)</label>
+      <input class="fi" id="nameInput" type="text" placeholder="예: Minjun Kim" maxlength="30"
         value="${googleName.includes('@')?'':googleName}">
-      <div class="hint">이름은 나중에 관리자 페이지에서 변경 가능합니다</div>
+      <div class="hint">캘린더에 이 이름으로 등록됩니다. 언제든지 변경 가능합니다.</div>
     </div>
     <div class="fg">
       <label class="fl">부서 <span style="color:#9ca3af;font-weight:400">(선택)</span></label>

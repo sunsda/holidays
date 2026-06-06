@@ -400,9 +400,10 @@ function tabGrant(){
           <td style="font-weight:600;color:var(--blue)">${u.totalLeave||0}일</td>
           <td style="color:var(--warn)">${u.usedLeave||0}일</td>
           <td style="color:var(--ok);font-weight:600">${rem(u)}일</td>
-          <td><div style="display:flex;align-items:center;gap:6px">
-            <input type="number" class="leave-input" id="gd_${u.uid}" min="1" max="60" value="5">
-            <button class="btn btn-p btn-sm do-grant" data-uid="${u.uid}" data-name="${dn(u)}"><i class="ti ti-plus"></i>부여</button>
+          <td><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <input type="number" class="leave-input" id="gd_${u.uid}" min="1" max="60" value="1">
+            <button class="btn btn-p btn-sm do-grant" data-uid="${u.uid}" data-name="${dn(u)}" data-total="${u.totalLeave||0}"><i class="ti ti-plus"></i>부여</button>
+            <button class="btn btn-ng btn-sm do-deduct" data-uid="${u.uid}" data-name="${dn(u)}" data-total="${u.totalLeave||0}"><i class="ti ti-minus"></i>차감</button>
           </div></td>
         </tr>`).join('')}
       </tbody>
@@ -505,6 +506,19 @@ function bindAdminPage(){
       const u=allUsers.find(x=>x.uid===uid);
       await updateDoc(doc(db,'users',uid),{totalLeave:(u?.totalLeave||0)+days});
       toast(`${name}님에게 ${days}일 부여 완료`,'ok');
+      await fetchData(); renderAdminPage();
+    };
+  });
+  document.querySelectorAll('.do-deduct').forEach(btn=>{
+    btn.onclick=async()=>{
+      const uid=btn.dataset.uid,name=btn.dataset.name;
+      const days=parseInt(document.getElementById(`gd_${uid}`)?.value)||0;
+      if(days<1){toast('일수를 입력해주세요','err');return;}
+      const u=allUsers.find(x=>x.uid===uid);
+      const newTotal=Math.max(0,(u?.totalLeave||0)-days);
+      if(!confirm(`${name}님의 휴가를 ${days}일 차감할까요? (${u?.totalLeave||0}일 → ${newTotal}일)`))return;
+      await updateDoc(doc(db,'users',uid),{totalLeave:newTotal});
+      toast(`${name}님 휴가 ${days}일 차감 완료`,'ok');
       await fetchData(); renderAdminPage();
     };
   });
